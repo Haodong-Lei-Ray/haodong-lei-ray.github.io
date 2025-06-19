@@ -21,6 +21,15 @@ WeChat: lighting870
 2020 - 2024: [Hainan University (HNU)](https://www.hainanu.edu.cn/)  
 - Bachelor of Engineering, [School of Computer Science and Technology](https://cs.hainanu.edu.cn/)
 
+### Publications
+1. PEANUT: Fast Inference of Visual Autoregressive Model with Adjacency-Adaptive Dynamical Draft Trees (ACMMM25 Submitted, First Author)
+2. EasyTune: Efficient Step-Aware Fine-Tuning for Diffusion-Based Motion Generation (NeurIPS25 Submitted, Second Author)
+3. MAS-UNet: A U-shaped Network for Prostate Segmentation (Frontiers in Medicine, SCI Q3)
+
+### Blogs
+1. [研究Agent的第一篇：CoT、ToT、GoT\&MLLM CoT](https://zhuanlan.zhihu.com/p/718082987)
+2. [Why is Deepseek? 研究DeepSeek的第一篇](https://zhuanlan.zhihu.com/p/20930750671)
+
 ### Current Research
 #### Speculative Sampling (2024/9 ~ Present)
 I am currently focusing on Speculative Sampling, a novel technique designed to accelerate the decoding process in large language models. This method leverages a smaller, faster draft model to generate multiple tokens simultaneously, which are then verified and refined by a larger target model in a single pass. By aligning the output distribution with that of the target model, Speculative Sampling significantly improves computational efficiency without sacrificing accuracy, making it a promising approach for optimizing real-time AI applications, such as natural language generation.
