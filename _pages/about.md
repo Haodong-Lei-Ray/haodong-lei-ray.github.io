@@ -6,6 +6,11 @@ redirect_from:
   - /about/
   - /about.html
 ---
+
+<p class="cv-download-top" style="margin: 0 0 1.25rem 0;">
+  <a href="{{ '/files/chinese-cv.pdf' | relative_url }}" class="btn btn--primary" role="button" target="_blank" rel="noopener noreferrer">下载中文简历 (PDF)</a>
+</p>
+
 <!-- 介绍我的当前学术状态 -->
 I am currently pursuing a master student at the [PALM Laboratory](https://palm.seu.edu.cn/intro.html), [School of Software](https://cse.seu.edu.cn/), [Southeast University (SEU)](https://www.seu.edu.cn/), Nanjing, China. I enrolled in this program in 2024, driven by my passion for advancing my expertise in computer science and artificial intelligence. My tutor is [Hongsong Wang](https://cs.seu.edu.cn/hongsongwang/main.htm).
 
