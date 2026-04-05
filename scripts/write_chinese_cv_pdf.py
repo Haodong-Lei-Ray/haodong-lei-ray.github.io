@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create files/chinese-cv.pdf: copy ../chinese_cv.pdf if present, else download a small valid PDF."""
+"""Sync CV PDFs into files/: chinese_cv.pdf / english_cv.pdf from parent of site root."""
 from __future__ import annotations
 
 import shutil
@@ -8,19 +8,30 @@ from pathlib import Path
 
 _PLACEHOLDER_URL = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
 
+# (source filename next to site folder, output under files/)
+_PAIRS: tuple[tuple[str, str], ...] = (
+    ("chinese_cv.pdf", "chinese-cv.pdf"),
+    ("english_cv.pdf", "english-cv.pdf"),
+)
 
-def main() -> None:
-    site = Path(__file__).resolve().parent.parent
-    out = site / "files" / "chinese-cv.pdf"
+
+def _ensure_pdf(local: Path, out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
-    local = site.parent / "chinese_cv.pdf"
     if local.is_file():
         shutil.copy2(local, out)
         print("Copied", local, "->", out, f"({out.stat().st_size} bytes)")
         return
     data = urllib.request.urlopen(_PLACEHOLDER_URL, timeout=30).read()
     out.write_bytes(data)
-    print("Wrote placeholder PDF ->", out, f"({out.stat().st_size} bytes)")
+    print("Missing", local, "— wrote placeholder ->", out, f"({out.stat().st_size} bytes)")
+
+
+def main() -> None:
+    site = Path(__file__).resolve().parent.parent
+    files = site / "files"
+    root = site.parent
+    for src_name, dest_name in _PAIRS:
+        _ensure_pdf(root / src_name, files / dest_name)
 
 
 if __name__ == "__main__":
