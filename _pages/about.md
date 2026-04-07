@@ -8,8 +8,8 @@ redirect_from:
 ---
 
 <p class="cv-download-top" style="margin: 0 0 1.25rem 0; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-  <a href="{{ '/files/chinese-cv.pdf' | relative_url }}" class="btn btn--primary" role="button" target="_blank" rel="noopener noreferrer">下载中文简历 (PDF)</a>
-  <a href="{{ '/files/english-cv.pdf' | relative_url }}" class="btn btn--primary" role="button" target="_blank" rel="noopener noreferrer">Download English CV (PDF)</a>
+  <a href="{{ '/files/chinese_cv.pdf' | absolute_url }}" class="btn btn--primary" role="button" target="_blank" rel="noopener noreferrer">下载中文简历 (PDF)</a>
+  <a href="{{ '/files/english_cv.pdf' | absolute_url }}" class="btn btn--primary" role="button" target="_blank" rel="noopener noreferrer">Download English CV (PDF)</a>
 </p>
 
 <!-- 介绍我的当前学术状态 -->

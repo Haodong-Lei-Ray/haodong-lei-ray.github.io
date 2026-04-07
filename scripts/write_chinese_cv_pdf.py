@@ -8,10 +8,10 @@ from pathlib import Path
 
 _PLACEHOLDER_URL = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
 
-# (source filename next to site folder, output under files/)
+# (source filename next to site folder, output under files/ — 与仓库内文件名一致，如 english_cv.pdf)
 _PAIRS: tuple[tuple[str, str], ...] = (
-    ("chinese_cv.pdf", "chinese-cv.pdf"),
-    ("english_cv.pdf", "english-cv.pdf"),
+    ("chinese_cv.pdf", "chinese_cv.pdf"),
+    ("english_cv.pdf", "english_cv.pdf"),
 )
 
 
