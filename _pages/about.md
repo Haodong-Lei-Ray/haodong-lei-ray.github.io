@@ -83,10 +83,10 @@ WeChat: lighting870
 EasyTune: Efficient Step-Aware Fine-Tuning for Diffusion-Based Motion Generation (NeurIPS25 Submitted, Second Author)
 
 MAS-UNet: A U-shaped Network for Prostate Segmentation (Frontiers in Medicine, SCI Q3) -->
-
+<!-- 
 ### Blogs
 1. [研究Agent的第一篇：CoT、ToT、GoT\&MLLM CoT](https://zhuanlan.zhihu.com/p/718082987)
-2. [Why is Deepseek? 研究DeepSeek的第一篇](https://zhuanlan.zhihu.com/p/20930750671)
+2. [Why is Deepseek? 研究DeepSeek的第一篇](https://zhuanlan.zhihu.com/p/20930750671) -->
 
 <!-- ### Current Research
 #### Speculative Sampling (2024/9 ~ Present)
