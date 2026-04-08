@@ -15,21 +15,57 @@ redirect_from:
 <!-- 介绍我的当前学术状态 -->
 I am currently pursuing a master student at the [PALM Laboratory](https://palm.seu.edu.cn/intro.html), [School of Software](https://cse.seu.edu.cn/), [Southeast University (SEU)](https://www.seu.edu.cn/), Nanjing, China. I enrolled in this program in 2024, driven by my passion for advancing my expertise in computer science and artificial intelligence. My tutor is [Hongsong Wang](https://cs.seu.edu.cn/hongsongwang/main.htm).
 
-[Email](l870572761@gmail.com): l870572761@gmail.com
+[Email](leihaodong@seu.edu.cn): leihaodong@seu.edu.cn
 
 WeChat: lighting870
 
-<!-- 我的教育背景 -->
+<!-- 我的教育背景：左图标 + 右文字，一栏一栏纵向排列 -->
 ### Education
-2024 - Present: [Southeast University (SEU)](https://www.seu.edu.cn/)  
-- Master of Engineering, [School of Software](https://cse.seu.edu.cn/), [PALM Laboratory](https://palm.seu.edu.cn/intro.html)  
 
-2020 - 2024: [Hainan University (HNU)](https://www.hainanu.edu.cn/)  
-- Bachelor of Engineering, [School of Computer Science and Technology](https://cs.hainanu.edu.cn/)
+<div class="about-affil-list" style="display: flex; flex-direction: column; gap: 1.25rem;">
 
-### Work Experience
+<div class="about-affil-row" style="display: flex; gap: 1rem; align-items: flex-start;">
+  <img src="{{ '/images/icon/seu.png' | absolute_url }}" alt="Southeast University" width="48" height="48" style="flex-shrink: 0; width: 48px; height: 48px; object-fit: contain; margin-top: 0.15rem;" />
+  <div>
+    <p style="margin: 0 0 0.35rem 0;"><strong>2024 – Present:</strong> <a href="https://www.seu.edu.cn/">Southeast University (SEU)</a></p>
+    <ul style="margin: 0; padding-left: 1.25rem;">
+      <li>Master of Engineering, <a href="https://cse.seu.edu.cn/">School of Software</a>, <a href="https://palm.seu.edu.cn/intro.html">PALM Laboratory</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="about-affil-row" style="display: flex; gap: 1rem; align-items: flex-start;">
+  <img src="{{ '/images/icon/hnu.png' | absolute_url }}" alt="Hainan University" width="48" height="48" style="flex-shrink: 0; width: 48px; height: 48px; object-fit: contain; margin-top: 0.15rem;" />
+  <div>
+    <p style="margin: 0 0 0.35rem 0;"><strong>2020 – 2024:</strong> <a href="https://www.hainanu.edu.cn/">Hainan University (HNU)</a></p>
+    <ul style="margin: 0; padding-left: 1.25rem;">
+      <li>Bachelor of Engineering, <a href="https://cs.hainanu.edu.cn/">School of Computer Science and Technology</a></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+### Research Experience
 <!-- 每条格式：序号，公司名，部门，时间 -->
-1. [Shanghai Artificial Intelligence Laboratory](https://www.shlab.org.cn/)（上海人工智能实验室）, Research intern, 2025.10 – Now
+
+<div class="about-affil-list" style="display: flex; flex-direction: column; gap: 1.25rem;">
+
+<div class="about-affil-row" style="display: flex; gap: 1rem; align-items: flex-start;">
+  <img src="{{ '/images/icon/ailab.png' | absolute_url }}" alt="Shanghai Artificial Intelligence Laboratory" width="48" height="48" style="flex-shrink: 0; width: 48px; height: 48px; object-fit: contain; margin-top: 0.15rem;" />
+  <div>
+    <p style="margin: 0;"><a href="https://www.shlab.org.cn/">Shanghai Artificial Intelligence Laboratory</a>（上海人工智能实验室）, Research intern, 2025.10 – Now</p>
+  </div>
+</div>
+
+<div class="about-affil-row" style="display: flex; gap: 1rem; align-items: flex-start;">
+  <img src="{{ '/images/icon/smu.png' | absolute_url }}" alt="Singapore Management University" width="48" height="48" style="flex-shrink: 0; width: 48px; height: 48px; object-fit: contain; margin-top: 0.15rem;" />
+  <div>
+    <p style="margin: 0;"><a href="https://www.smu.edu.sg/">Singapore Management University</a>, <a href="https://www.lv-lab.org/SMU/index.html">LV lab</a>, Visiting student, 2024.07 – 2025.03</p>
+  </div>
+</div>
+
+</div>
 
 ### Publications
 <!-- preprints-sync:start (do not edit manually; run sync_preprints_to_site.py) -->
