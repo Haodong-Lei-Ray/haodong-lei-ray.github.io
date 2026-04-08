@@ -13,7 +13,7 @@ redirect_from:
 </p>
 
 <!-- 介绍我的当前学术状态 -->
-I am currently pursuing a master student at the [PALM Laboratory](https://palm.seu.edu.cn/intro.html), [School of Software](https://cse.seu.edu.cn/), [Southeast University (SEU)](https://www.seu.edu.cn/), Nanjing, China. I enrolled in this program in 2024, driven by my passion for advancing my expertise in computer science and artificial intelligence. My tutor is [Hongsong Wang](https://hongsong-wang.github.io/).
+I am currently a master's student at the [PALM Laboratory](https://palm.seu.edu.cn/intro.html), [School of Software](https://cse.seu.edu.cn/), [Southeast University (SEU)](https://www.seu.edu.cn/), Nanjing, China. My tutor is [Hongsong Wang](https://hongsong-wang.github.io/). I received my Bachelor of Engineering from [Hainan University (HNU)](https://www.hainanu.edu.cn/). I am also a research intern at the [Shanghai Artificial Intelligence Laboratory](https://www.shlab.org.cn/).
 
 [Email](leihaodong@seu.edu.cn): leihaodong@seu.edu.cn
 
