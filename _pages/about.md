@@ -13,7 +13,7 @@ redirect_from:
 </p>
 
 <!-- 介绍我的当前学术状态 -->
-I am currently pursuing a master student at the [PALM Laboratory](https://palm.seu.edu.cn/intro.html), [School of Software](https://cse.seu.edu.cn/), [Southeast University (SEU)](https://www.seu.edu.cn/), Nanjing, China. I enrolled in this program in 2024, driven by my passion for advancing my expertise in computer science and artificial intelligence. My tutor is [Hongsong Wang](https://cs.seu.edu.cn/hongsongwang/main.htm).
+I am currently pursuing a master student at the [PALM Laboratory](https://palm.seu.edu.cn/intro.html), [School of Software](https://cse.seu.edu.cn/), [Southeast University (SEU)](https://www.seu.edu.cn/), Nanjing, China. I enrolled in this program in 2024, driven by my passion for advancing my expertise in computer science and artificial intelligence. My tutor is [Hongsong Wang](https://hongsong-wang.github.io/).
 
 [Email](leihaodong@seu.edu.cn): leihaodong@seu.edu.cn
 
@@ -30,6 +30,7 @@ WeChat: lighting870
     <p style="margin: 0 0 0.35rem 0;"><strong>2024 – Present:</strong> <a href="https://www.seu.edu.cn/">Southeast University (SEU)</a></p>
     <ul style="margin: 0; padding-left: 1.25rem;">
       <li>Master of Engineering, <a href="https://cse.seu.edu.cn/">School of Software</a>, <a href="https://palm.seu.edu.cn/intro.html">PALM Laboratory</a></li>
+      <li>Supervisor: <a href="https://hongsong-wang.github.io/">Hongsong Wang</a></li>
     </ul>
   </div>
 </div>
@@ -54,14 +55,20 @@ WeChat: lighting870
 <div class="about-affil-row" style="display: flex; gap: 1rem; align-items: flex-start;">
   <img src="{{ '/images/icon/ailab.png' | absolute_url }}" alt="Shanghai Artificial Intelligence Laboratory" width="48" height="48" style="flex-shrink: 0; width: 48px; height: 48px; object-fit: contain; margin-top: 0.15rem;" />
   <div>
-    <p style="margin: 0;"><a href="https://www.shlab.org.cn/">Shanghai Artificial Intelligence Laboratory</a>（上海人工智能实验室）, Research intern, 2025.10 – Now</p>
+    <p style="margin: 0 0 0.35rem 0;"><a href="https://www.shlab.org.cn/">Shanghai Artificial Intelligence Laboratory</a>（上海人工智能实验室）, Research intern, 2025.10 – Now</p>
+    <ul style="margin: 0; padding-left: 1.25rem;">
+      <li>Supervisor: <a href="https://dw2283.github.io/wangding.github.io/">Ding Wang</a></li>
+    </ul>
   </div>
 </div>
 
 <div class="about-affil-row" style="display: flex; gap: 1rem; align-items: flex-start;">
   <img src="{{ '/images/icon/smu.png' | absolute_url }}" alt="Singapore Management University" width="48" height="48" style="flex-shrink: 0; width: 48px; height: 48px; object-fit: contain; margin-top: 0.15rem;" />
   <div>
-    <p style="margin: 0;"><a href="https://www.smu.edu.sg/">Singapore Management University</a>, <a href="https://www.lv-lab.org/SMU/index.html">LV lab</a>, Visiting student, 2024.07 – 2025.03</p>
+    <p style="margin: 0 0 0.35rem 0;"><a href="https://www.smu.edu.sg/">Singapore Management University</a>, <a href="https://www.lv-lab.org/SMU/index.html">LV lab</a>, Visiting student, 2024.07 – 2025.03</p>
+    <ul style="margin: 0; padding-left: 1.25rem;">
+      <li>Supervisor: <a href="https://panzhous.github.io/">Pan Zhou</a></li>
+    </ul>
   </div>
 </div>
 
