@@ -65,7 +65,7 @@ WeChat: lighting870
 <div class="about-affil-row" style="display: flex; gap: 1rem; align-items: flex-start;">
   <img src="{{ '/images/icon/smu.png' | absolute_url }}" alt="Singapore Management University" width="48" height="48" style="flex-shrink: 0; width: 48px; height: 48px; object-fit: contain; margin-top: 0.15rem;" />
   <div>
-    <p style="margin: 0 0 0.35rem 0;"><a href="https://www.smu.edu.sg/">Singapore Management University</a>, <a href="https://www.lv-lab.org/SMU/index.html">LV lab</a>, Visiting student, 2024.07 – 2025.03</p>
+    <p style="margin: 0 0 0.35rem 0;"><a href="https://www.smu.edu.sg/">Singapore Management University</a>, <a href="https://www.lv-lab.org/SMU/index.html">LV lab</a>, Visiting student, 2024.07 – 2026.03</p>
     <ul style="margin: 0; padding-left: 1.25rem;">
       <li>Supervisor: <a href="https://panzhous.github.io/">Pan Zhou</a></li>
     </ul>
