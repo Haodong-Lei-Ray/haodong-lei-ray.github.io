@@ -73,6 +73,11 @@ a:hover { color: var(--color-primary-hover); text-decoration: underline; }
 
 img { max-width: 100%; height: auto; display: block; }
 
+/* All headings use pixel font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'VT323', monospace;
+}
+
 /* ---------- Container ---------- */
 .container {
   max-width: 860px;
@@ -133,7 +138,7 @@ img { max-width: 100%; height: auto; display: block; }
   min-width: 0;
 }
 .hero-name {
-  font-family: 'Pixelify Sans', monospace;
+  font-family: 'Silkscreen', monospace;
   font-size: 1.6rem;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -146,7 +151,7 @@ img { max-width: 100%; height: auto; display: block; }
   font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', var(--font-sans);
   font-size: 1.4rem;
   font-weight: 400;
-  color: var(--color-accent);
+  color: var(--color-text);
   margin-left: 0.75rem;
   text-shadow: 2px 2px 0 var(--color-primary-light);
 }
@@ -310,6 +315,7 @@ img { max-width: 100%; height: auto; display: block; }
   margin-bottom: 0.2rem;
 }
 .timeline-title {
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 600;
   margin-bottom: 0.3rem;
@@ -391,6 +397,7 @@ img { max-width: 100%; height: auto; display: block; }
   min-width: 0;
 }
 .pub-title {
+  font-family: var(--font-sans);
   font-size: 1.02rem;
   font-weight: 600;
   margin-bottom: 0.35rem;
