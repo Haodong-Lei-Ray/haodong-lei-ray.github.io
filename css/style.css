@@ -4,21 +4,21 @@
 
 /* ---------- CSS Variables (Light Theme) ---------- */
 :root {
-  --color-bg:            #fafbfc;
-  --color-bg-alt:        #f0f2f5;
-  --color-surface:       #ffffff;
-  --color-border:        #e1e4e8;
-  --color-text:          #1a1a2e;
-  --color-text-secondary:#555770;
-  --color-text-muted:    #8888a0;
-  --color-primary:       #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-light: #dbeafe;
-  --color-accent:        #7c3aed;
-  --color-card-shadow:   0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --color-card-hover:    0 4px 16px rgba(0,0,0,0.08);
-  --color-tag-bg:        #fef3c7;
-  --color-tag-text:      #92400e;
+  --color-bg:            #edf0f2;
+  --color-bg-alt:        #e3e7ea;
+  --color-surface:       #f4f5f6;
+  --color-border:        #cdd4da;
+  --color-text:          #3a4450;
+  --color-text-secondary:#5f6f7a;
+  --color-text-muted:    #7b8b8a;
+  --color-primary:       #6B7D8A;
+  --color-primary-hover: #5a6b77;
+  --color-primary-light: #dce3e8;
+  --color-accent:        #9B8EA4;
+  --color-card-shadow:   0 1px 3px rgba(100,110,120,0.08);
+  --color-card-hover:    0 4px 12px rgba(100,110,120,0.12);
+  --color-tag-bg:        #e6ede8;
+  --color-tag-text:      #4a6658;
   --radius-sm:           6px;
   --radius-md:           10px;
   --radius-lg:           16px;
@@ -29,20 +29,20 @@
 
 /* ---------- Dark Theme ---------- */
 [data-theme="dark"] {
-  --color-bg:            #0d1117;
-  --color-bg-alt:        #161b22;
-  --color-surface:       #1c2129;
-  --color-border:        #30363d;
-  --color-text:          #e6edf3;
-  --color-text-secondary:#8b949e;
-  --color-text-muted:    #6e7681;
-  --color-primary:       #58a6ff;
-  --color-primary-hover: #79c0ff;
-  --color-primary-light: #1c3a5e;
+  --color-bg:            #1c2128;
+  --color-bg-alt:        #222830;
+  --color-surface:       #272d36;
+  --color-border:        #363e48;
+  --color-text:          #d3dbe3;
+  --color-text-secondary:#94a3b0;
+  --color-text-muted:    #6c7a88;
+  --color-primary:       #8DA399;
+  --color-primary-hover: #9bb5aa;
+  --color-primary-light: #28322e;
   --color-card-shadow:   0 1px 3px rgba(0,0,0,0.2);
   --color-card-hover:    0 4px 16px rgba(0,0,0,0.3);
-  --color-tag-bg:        #3d2800;
-  --color-tag-text:      #fbbf24;
+  --color-tag-bg:        #2a3532;
+  --color-tag-text:      #8DA399;
 }
 
 /* ---------- Reset & Base ---------- */
@@ -232,7 +232,7 @@ h1, h2, h3, h4, h5, h6 {
   cursor: default;
 }
 
-/* ---------- Buttons ---------- */
+/* ---------- Buttons (pixel style) ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -241,8 +241,8 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.9rem;
   font-weight: 500;
   font-family: var(--font-sans);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border: 3px solid var(--color-text);
+  border-radius: 8px;
   cursor: pointer;
   transition: all var(--transition);
   text-decoration: none;
@@ -251,27 +251,27 @@ h1, h2, h3, h4, h5, h6 {
 .btn-primary {
   background: var(--color-primary);
   color: #ffffff;
-  border-color: var(--color-primary);
+  border-color: var(--color-text);
 }
 .btn-primary:hover {
   background: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
   color: #ffffff;
   text-decoration: none;
 }
 .btn-outline {
-  background: transparent;
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-text);
 }
 .btn-outline:hover {
   background: var(--color-primary-light);
-  color: var(--color-primary-hover);
+  color: var(--color-text);
   text-decoration: none;
 }
 .btn-sm {
   padding: 0.3rem 0.75rem;
   font-size: 0.8rem;
+  border-width: 2px;
 }
 
 /* ---------- Sections ---------- */
