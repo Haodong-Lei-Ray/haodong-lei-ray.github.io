@@ -553,7 +553,7 @@ h1, h2, h3, h4, h5, h6 {
    ============================================================ */
 
 /* ---- color palette (Morandi blue-gray) ---- */
-.hobby-page {
+.life-page {
   --color-bg:            #fef7ed;
   --color-bg-alt:        #fdf0dc;
   --color-surface:       #fff8f0;
@@ -575,7 +575,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'VT323', monospace;
   image-rendering: pixelated;
 }
-.hobby-page[data-theme="dark"] {
+.life-page[data-theme="dark"] {
   --color-bg:            #1a1a2e;
   --color-bg-alt:        #1f1f35;
   --color-surface:       #272744;
@@ -597,22 +597,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ---- hero ---- */
-.hobby-page .hero-name {
+.life-page .hero-name {
   font-family: 'VT323', monospace;
   font-size: 2.5rem;
   color: var(--color-primary);
   text-shadow: 2px 2px 0 var(--color-primary-light);
 }
-.hobby-page .hero-bio {
+.life-page .hero-bio {
   font-family: 'VT323', monospace;
   font-size: 1.15rem;
   color: var(--color-text-secondary);
 }
-.hobby-page .section-title {
+.life-page .section-title {
   font-family: 'VT323', monospace;
   font-size: 1.6rem;
 }
-.hobby-page .pixel-section {
+.life-page .pixel-section {
   border-top: 3px dashed var(--color-border);
 }
 

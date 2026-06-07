@@ -44,9 +44,9 @@ hobby页面全是VT323
 
 ---
 
-## Hobby 页面 — 添加新爱好的模板
+## Life 页面 — 添加新爱好的模板
 
-在 `hobby.html` 的 `<div class="trophy-grid">` 里，复制下面这段，改三个地方：
+在 `life.html` 的 `<div class="trophy-grid">` 里，复制下面这段，改三个地方：
 
 ```html
 <div class="trophy-card">
