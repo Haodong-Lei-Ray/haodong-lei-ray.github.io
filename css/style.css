@@ -85,6 +85,30 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0 1.5rem;
 }
 
+/* ---------- Top Navigation ---------- */
+.top-nav {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem 0;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.top-nav a {
+  font-family: 'VT323', monospace;
+  font-size: 1.15rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition);
+}
+.top-nav a:hover,
+.top-nav a.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  text-decoration: none;
+}
+
 /* ---------- Theme Toggle ---------- */
 .theme-toggle {
   position: fixed;
@@ -138,8 +162,8 @@ h1, h2, h3, h4, h5, h6 {
   min-width: 0;
 }
 .hero-name {
-  font-family: 'Silkscreen', monospace;
-  font-size: 1.6rem;
+  font-family: 'VT323', monospace;
+  font-size: 2rem;
   font-weight: 400;
   letter-spacing: 0.04em;
   margin-bottom: 0.5rem;
@@ -189,8 +213,9 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 0.35rem;
   padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+  font-weight: 400;
   border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
   background: transparent;
@@ -428,6 +453,16 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 99px;
   background: var(--color-tag-bg);
   color: var(--color-tag-text);
+}
+.pub-year-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.1rem 0.55rem;
+  border-radius: 99px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  margin-right: 0.4rem;
 }
 .pub-links {
   display: flex;
