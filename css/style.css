@@ -547,3 +547,149 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0.45rem 0.9rem;
   }
 }
+
+/* ============================================================
+   Hobby Page — Pixel RPG Adventure Style
+   ============================================================ */
+
+/* ---- color palette (Morandi blue-gray) ---- */
+.hobby-page {
+  --color-bg:            #fef7ed;
+  --color-bg-alt:        #fdf0dc;
+  --color-surface:       #fff8f0;
+  --color-border:        #e8cfa0;
+  --color-text:          #5c3d2e;
+  --color-text-secondary:#8b5e3c;
+  --color-text-muted:    #b8946e;
+  --color-primary:       #d4852c;
+  --color-primary-hover: #b8701f;
+  --color-primary-light: #fce8cc;
+  --color-accent:        #c0604d;
+  --color-tag-bg:        #fef0d5;
+  --color-tag-text:      #8b5e3c;
+  --color-card-shadow:   0 1px 3px rgba(180,140,100,0.15);
+  --color-card-hover:    0 4px 12px rgba(180,140,100,0.25);
+
+  --trophy-bg:           #fef7ed;
+  --trophy-border:       #d4a04a;
+  font-family: 'VT323', monospace;
+  image-rendering: pixelated;
+}
+.hobby-page[data-theme="dark"] {
+  --color-bg:            #1a1a2e;
+  --color-bg-alt:        #1f1f35;
+  --color-surface:       #272744;
+  --color-border:        #3d3d5c;
+  --color-text:          #e8d5b7;
+  --color-text-secondary:#b8a9c9;
+  --color-text-muted:    #7a6e8a;
+  --color-primary:       #f0c060;
+  --color-primary-hover: #ffd780;
+  --color-primary-light: #3a2a10;
+  --color-accent:        #c98bdb;
+  --color-tag-bg:        #2a2030;
+  --color-tag-text:      #d4a0e8;
+  --color-card-shadow:   0 1px 3px rgba(0,0,0,0.3);
+  --color-card-hover:    0 4px 16px rgba(0,0,0,0.4);
+
+  --trophy-bg:           #2a2030;
+  --trophy-border:       #c98bdb;
+}
+
+/* ---- hero ---- */
+.hobby-page .hero-name {
+  font-family: 'VT323', monospace;
+  font-size: 2.5rem;
+  color: var(--color-primary);
+  text-shadow: 2px 2px 0 var(--color-primary-light);
+}
+.hobby-page .hero-bio {
+  font-family: 'VT323', monospace;
+  font-size: 1.15rem;
+  color: var(--color-text-secondary);
+}
+.hobby-page .section-title {
+  font-family: 'VT323', monospace;
+  font-size: 1.6rem;
+}
+.hobby-page .pixel-section {
+  border-top: 3px dashed var(--color-border);
+}
+
+/* ---- trophy hint ---- */
+.pixel-hint {
+  font-family: 'VT323', monospace;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-top: -0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ---- trophy grid ---- */
+.trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ---- trophy card ---- */
+.trophy-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+  background: var(--color-surface);
+  border: 3px solid var(--color-border);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--color-border);
+  cursor: default;
+  animation: trophy-float 3s ease-in-out infinite;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.trophy-card:nth-child(2) { animation-delay: 0.5s; }
+.trophy-card:nth-child(3) { animation-delay: 1.0s; }
+.trophy-card:nth-child(4) { animation-delay: 1.5s; }
+.trophy-card:nth-child(5) { animation-delay: 2.0s; }
+
+.trophy-card:hover {
+  animation: trophy-bounce 0.3s ease;
+  transform: translateY(-6px);
+  box-shadow: 4px 10px 0 var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* ---- trophy icon ---- */
+.trophy-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.75rem;
+}
+.trophy-icon svg {
+  display: block;
+}
+
+/* ---- trophy text ---- */
+.trophy-name {
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin-bottom: 0.3rem;
+}
+.trophy-desc {
+  font-family: 'VT323', monospace;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* ---- float animation ---- */
+@keyframes trophy-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+@keyframes trophy-bounce {
+  0%   { transform: translateY(0) scale(1); }
+  40%  { transform: translateY(-10px) scale(1.06); }
+  70%  { transform: translateY(-3px) scale(0.98); }
+  100% { transform: translateY(-6px) scale(1); }
+}
