@@ -133,18 +133,22 @@ img { max-width: 100%; height: auto; display: block; }
   min-width: 0;
 }
 .hero-name {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 0.35rem;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
   color: var(--color-text);
+  text-shadow: 3px 3px 0 var(--color-primary-light);
+  image-rendering: pixelated;
 }
 .hero-name-cn {
-  font-family: 'Noto Sans SC', var(--font-sans);
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', var(--font-sans);
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--color-accent);
   margin-left: 0.75rem;
+  text-shadow: 2px 2px 0 var(--color-primary-light);
 }
 .hero-bio {
   font-size: 0.95rem;
@@ -286,8 +290,7 @@ img { max-width: 100%; height: auto; display: block; }
   justify-content: center;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: #ffffff;
 }
 .timeline-icon img {
   width: 40px;
