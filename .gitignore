@@ -8,11 +8,12 @@ local/
 # Ignore the Gemfile that is generated
 Gemfile.lock
 
-# Ingore files created by npm
+# Ignore files created by npm
 node_modules
 package-lock.json
 
 version/*
 test/*
-# module/pet/config.js
+# module/pet/config.js 我就是要保留这个,别注释
 .wrangler/
+.DS_Store
