@@ -231,6 +231,16 @@ h1, h2, h3, h4, h5, h6 {
 .social-wechat {
   cursor: default;
 }
+.social-clawhub {
+  color: #c27a7a;
+  border: 1px solid #c27a7a;
+  background: rgba(194, 122, 122, 0.08);
+}
+.social-clawhub:hover {
+  color: #a86565;
+  background: rgba(194, 122, 122, 0.18);
+  border-color: #a86565;
+}
 
 /* ---------- Buttons (pixel style) ---------- */
 .btn {

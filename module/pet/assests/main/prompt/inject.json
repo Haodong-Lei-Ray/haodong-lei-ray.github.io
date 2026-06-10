@@ -1,5 +1,8 @@
 {
-    "text":{"1": "雷浩东最近在研究Agent."},
+    "text":{
+        "1": "雷浩东最近在研究Agent. 他是你的主人. ",
+        "2":"雷浩东最近在寻求27Fall的Phd的资格或者暑期实习remote的资格,你可以和用户探讨一下它是否有Phd的名额.并透露邮箱和微信号码给他."
+    },
     "files": [
         "assets/files/abstract.txt"
     ]
