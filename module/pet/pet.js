@@ -9,8 +9,17 @@
   var BASE = 'module/pet/assests/main/animate/';
   var STATE_WAIT = 'wait';
   var STATE_CHAT = 'chat';
-  var CHAT_CLIP_COUNT = 3; // chat1.mp4 … chat3.mp4
+  var CHAT_CLIP_COUNT = 3; // chat1.gif … chat3.gif
   var chatClipIndex = 0;
+
+  // GIF durations in milliseconds (based on original MP4 durations)
+  var GIF_DURATIONS = {
+    'appear/appear1.gif': 5100,
+    'wait/wait1.gif': 3100,
+    'chat/chat1.gif': 10100,
+    'chat/chat2.gif': 5100,
+    'chat/chat3.gif': 5900
+  };
 
   var petSoul = '';
   var petOpeningWord = 'Yo! Ask me anything~ 🎮';
@@ -88,13 +97,9 @@
     pet.title = 'Click to chat!';
     pet.style.cssText = 'position:fixed;bottom:10px;left:10px;right:auto;z-index:999;cursor:pointer;';
 
-    videoEl = document.createElement('video');
+    // Use <img> for GIF animations (GIF cannot be played by <video>)
+    videoEl = document.createElement('img');
     videoEl.className = 'pet-video';
-    videoEl.muted = true;
-    videoEl.playsInline = true;
-    videoEl.loop = false;
-    videoEl.autoplay = true;
-    videoEl.setAttribute('disableRemotePlayback', '');
     videoEl.style.maxWidth = '140px';
     videoEl.style.maxHeight = '140px';
     videoEl.style.width = 'auto';
@@ -135,27 +140,28 @@
     return bubble;
   }
 
-  // ---- Video playback helpers ----
+  // ---- Video playback helpers (now using <img> for GIF) ----
+  // For GIF: set src and use setTimeout based on known duration to trigger onEnded
   function playVideo(src, loop, onEnded) {
     if (!videoEl) return;
-    videoEl.loop = !!loop;
-    videoEl.onended = onEnded || null;
-    // Force reload to switch source
-    var playing = !videoEl.paused;
     videoEl.src = src;
-    videoEl.load();
-    videoEl.play().catch(function () {});
+    // If there's an onEnded callback and not looping, schedule it after the GIF duration
+    if (onEnded && !loop) {
+      var relPath = src.replace(BASE, '');
+      var duration = GIF_DURATIONS[relPath] || 5000; // fallback 5s
+      setTimeout(onEnded, duration);
+    }
   }
 
   function playAppear() {
-    playVideo(BASE + 'appear/appear1.mp4', false, function () {
+    playVideo(BASE + 'appear/appear1.gif', false, function () {
       playWait();
     });
   }
 
   function playWait() {
     currentState = STATE_WAIT;
-    playVideo(BASE + 'wait/wait1.mp4', true);
+    playVideo(BASE + 'wait/wait1.gif', true);
   }
 
   function playChat() {
@@ -167,9 +173,9 @@
   // Round-robin through chat1 → chat2 → chat3 → chat1 … while in chat state
   function playNextChatClip() {
     if (currentState !== STATE_CHAT) return; // chat closed → stop cycling
-    var n = chatClipIndex + 1; // 1-based filename (chat1.mp4 …)
+    var n = chatClipIndex + 1; // 1-based filename (chat1.gif …)
     chatClipIndex = (chatClipIndex + 1) % CHAT_CLIP_COUNT;
-    playVideo(BASE + 'chat/chat' + n + '.mp4', false, playNextChatClip);
+    playVideo(BASE + 'chat/chat' + n + '.gif', false, playNextChatClip);
   }
 
   // ---- Wait bubble: blink in every 10s like a pixel-game NPC ----
