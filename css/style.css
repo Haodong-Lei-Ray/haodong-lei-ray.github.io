@@ -25,6 +25,13 @@
   --font-sans:           'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono:           'JetBrains Mono', 'Fira Code', monospace;
   --transition:          0.2s ease;
+
+  /* Fluid ASCII background — muted Morandi palette (light) */
+  --bg-grad-1:           #d6dee0;   /* muted slate-gray */
+  --bg-grad-2:           #ddd9e0;   /* muted mauve (ties to --color-accent) */
+  --bg-grad-3:           #d3dee2;   /* soft blue-gray */
+  --bg-grad-base:        var(--color-bg-alt);  /* match unified page backdrop */
+  --bg-glyph:            107, 125, 138;  /* slate = --color-primary, rgb triple */
 }
 
 /* ---------- Dark Theme ---------- */
@@ -43,6 +50,13 @@
   --color-card-hover:    0 4px 16px rgba(0,0,0,0.3);
   --color-tag-bg:        #2a3532;
   --color-tag-text:      #8DA399;
+
+  /* Fluid ASCII background — muted Morandi palette (dark) */
+  --bg-grad-1:           #2b343b;   /* muted slate */
+  --bg-grad-2:           #313442;   /* muted mauve-slate */
+  --bg-grad-3:           #283640;   /* desaturated blue-gray */
+  --bg-grad-base:        var(--color-bg-alt);  /* match unified page backdrop */
+  --bg-glyph:            141, 163, 153;  /* sage = --color-primary, rgb triple */
 }
 
 /* ---------- Reset & Base ---------- */
@@ -60,7 +74,9 @@ body {
   font-size: 16px;
   line-height: 1.7;
   color: var(--color-text);
-  background: var(--color-bg);
+  /* Unified page backdrop = the "education" (section-alt) colour, so the
+     fluid effect sits on one consistent background instead of colour bands. */
+  background: var(--color-bg-alt);
   transition: background var(--transition), color var(--transition);
 }
 
@@ -72,6 +88,43 @@ a {
 a:hover { color: var(--color-primary-hover); text-decoration: underline; }
 
 img { max-width: 100%; height: auto; display: block; }
+
+/* Codex-style background: gradient layer + ASCII fluid canvas */
+#bg-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 60% at 78% 18%, var(--bg-grad-1) 0%, transparent 62%),
+    radial-gradient(55% 55% at 18% 30%, var(--bg-grad-2) 0%, transparent 60%),
+    radial-gradient(70% 70% at 50% 92%, var(--bg-grad-3) 0%, transparent 64%),
+    var(--bg-grad-base);
+  background-size: 160% 160%, 150% 150%, 170% 170%, 100% 100%;
+  background-position: 78% 18%, 18% 30%, 50% 92%, 0 0;
+  opacity: 0.55;
+  animation: bg-drift 38s ease-in-out infinite alternate;
+  transition: opacity var(--transition);
+}
+
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes bg-drift {
+  0%   { background-position: 78% 18%, 18% 30%, 50% 92%, 0 0; }
+  50%  { background-position: 68% 26%, 28% 22%, 58% 84%, 0 0; }
+  100% { background-position: 82% 12%, 12% 38%, 44% 96%, 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #bg-gradient { animation: none; }
+}
 
 /* All headings use pixel font */
 h1, h2, h3, h4, h5, h6 {
@@ -290,7 +343,9 @@ h1, h2, h3, h4, h5, h6 {
   border-top: 1px solid var(--color-border);
 }
 .section-alt {
-  background: var(--color-bg-alt);
+  /* Transparent so the fluid effect shows through; the page backdrop is
+     already the section-alt colour, keeping every section uniform. */
+  background: transparent;
 }
 .section-title {
   display: flex;

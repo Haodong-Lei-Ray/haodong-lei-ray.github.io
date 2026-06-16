@@ -6,8 +6,8 @@
   <meta name="description" content="Haodong Lei - Personal Academic Homepage">
   <title>Haodong Lei | Personal Homepage</title>
 
-  <!-- Favicon (generated from profile) -->
-  <link rel="icon" type="image/png" href="assets/images/profile1.png">
+  <!-- Favicon (animated) -->
+  <link rel="icon" type="image/gif" href="assets/images/icon/website-icon.gif">
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css?v=7">
@@ -17,6 +17,10 @@
   <link rel="stylesheet" href="css/fonts.css">
 </head>
 <body>
+
+  <!-- Interactive ASCII fluid background (Codex-style) -->
+  <div id="bg-gradient" aria-hidden="true"></div>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
   <!-- Navigation -->
   <nav class="top-nav">
@@ -368,6 +372,7 @@
   </footer>
 
   <!-- JavaScript -->
+  <script src="js/background.js"></script>
   <script src="js/main.js"></script>
   <script src="module/pet/config.js"></script>
   <script src="module/pet/pet.js"></script>
