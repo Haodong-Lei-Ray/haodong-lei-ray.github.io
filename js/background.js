@@ -61,10 +61,10 @@
   const FLUID = {
     flow: 0.7,        // advection strength: cells the ink moves per unit velocity
     iter: 4,          // pressure-solve iterations (more = smoother swirls)
-    densDecay: 0.85,  // trail fade per step (lower = shorter trail)
-    velDecay: 0.70,   // how fast flow settles when the cursor stops
-    force: 0.5,       // cursor speed -> injected velocity (more = wilder flow)
-    velStop: 0.08,    // velocities below this snap to 0 (keeps the still cat crisp)
+    densDecay: 0.9,  // trail fade per step (lower = shorter trail)
+    velDecay: 0.95,   // how fast flow settles when the cursor stops
+    force: 0.6,       // cursor speed -> injected velocity (more = wilder flow)
+    velStop: 0.0,    // velocities below this snap to 0 (keeps the still cat crisp)
   };
 
   // Precompute filled-cell offsets, centred on the cursor (bitmap units).
@@ -81,7 +81,7 @@
     }
     return cells;
   })();
-  const AMBIENT_AMP = 0.05;    // faint resting field amplitude (mostly empty)
+  const AMBIENT_AMP = 0.3;    // faint resting field amplitude (mostly empty)
 
   // Content elements the effect must NOT draw over (keeps text readable).
   // Their on-screen rectangles become "safe zones" with a soft feathered edge.
