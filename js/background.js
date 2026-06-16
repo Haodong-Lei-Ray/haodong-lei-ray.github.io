@@ -62,9 +62,13 @@
     flow: 0.7,        // advection strength: cells the ink moves per unit velocity
     iter: 4,          // pressure-solve iterations (more = smoother swirls)
     densDecay: 0.9,  // trail fade per step (lower = shorter trail)
-    velDecay: 0.95,   // how fast flow settles when the cursor stops
+    velDecay: 0.55,   // damping per step. Also caps the idle wobble's steady-state
+                       // speed (~idleAmp / (1 - velDecay)), so keep this well below 1.
     force: 0.6,       // cursor speed -> injected velocity (more = wilder flow)
-    velStop: 0.0,    // velocities below this snap to 0 (keeps the still cat crisp)
+    velStop: 0,       // velocities below this snap to 0. Leave at 0 so it never
+                       // fights the idle wobble below; velDecay alone settles fast.
+    idleAmp: 0.15,     // continuous idle wobble force (subtle: keep steady-state small)
+    idleFreq: 0.0015,  // idle wobble oscillation speed
   };
 
   // Precompute filled-cell offsets, centred on the cursor (bitmap units).
@@ -81,7 +85,7 @@
     }
     return cells;
   })();
-  const AMBIENT_AMP = 0.3;    // faint resting field amplitude (mostly empty)
+  const AMBIENT_AMP = 0.3;   // faint resting field amplitude (mostly empty)
 
   // Content elements the effect must NOT draw over (keeps text readable).
   // Their on-screen rectangles become "safe zones" with a soft feathered edge.
@@ -274,6 +278,13 @@
     const fx = (pointer.x - pointer.px) / CELL_PX * FLUID.force;
     const fy = (pointer.y - pointer.py) / CELL_PX * FLUID.force;
 
+    // Idle wobble: a tiny continuous oscillating force so the resting cat
+    // still breathes/floats a bit instead of freezing solid. Runs through the
+    // same divergence-free projection as real cursor motion, so it settles
+    // into a soft swirl rather than a rigid shake.
+    const wobbleX = Math.sin(ambientT * 1000 * FLUID.idleFreq) * FLUID.idleAmp;
+    const wobbleY = Math.cos(ambientT * 1000 * FLUID.idleFreq * 1.3) * FLUID.idleAmp;
+
     for (let k = 0; k < BRUSH.length; k++) {
       const baseI = cc + Math.round(BRUSH[k][0] * BRUSH_SCALE);
       const baseJ = cr + Math.round(BRUSH[k][1] * BRUSH_SCALE);
@@ -284,7 +295,7 @@
           const i = baseI + si;
           if (i < 1 || i >= w - 1) continue;
           const idx = i + j * w;
-          velX[idx] += fx; velY[idx] += fy;
+          velX[idx] += fx + wobbleX; velY[idx] += fy + wobbleY;
         }
       }
     }
