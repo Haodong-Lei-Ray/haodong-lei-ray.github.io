@@ -1,9 +1,20 @@
-// API config — gitignored, keep this file local only
+// API config — no secret keys live here anymore.
+//
+// GLM is called directly (it's China-hosted and its key isn't auto-revoked).
+// Gemini + Cloudflare AI go through your Cloudflare Worker proxy
+// (cloudflare-worker/pet-ai-proxy.js), which holds the real Gemini key as a
+// server-side Secret and runs Cloudflare's own models via the AI binding —
+// so nothing here can be leaked or auto-revoked.
+//
+// ⚠️ After deploying the Worker, replace the host below with YOUR worker URL.
+const PET_PROXY = "https://pet-proxy.haodong-lei.workers.dev";
+
 const AI_CONFIG = {
   // ---- providers: where to send the request + how to authenticate ----
   // `api` selects the request/response shape pet.js builds:
-  //   "openai" → OpenAI-style /chat/completions (Bearer auth)
-  //   "gemini" → Google native /models/{model}:generateContent (x-goog-api-key)
+  //   "openai"     → OpenAI-style /chat/completions (Bearer auth)        [GLM]
+  //   "gemini"     → Google native /models/<m>:generateContent (proxied) [Gemini]
+  //   "cloudflare" → Worker /cf/run → env.AI.run(), returns {response}    [Cloudflare AI]
   providers: {
     glm: {
       api: "openai",
@@ -12,25 +23,31 @@ const AI_CONFIG = {
     },
     gemini: {
       api: "gemini",
-      // request URL is built as baseUrl + "/models/" + model + ":generateContent"
-      baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-      apiKey: "AQ.Ab8RN6KAlE_Rcwb8HmUIgskQHSBZJlDOxAWpB59cVfiopXJVdg"
+      // request URL = baseUrl + "/models/" + model + ":generateContent"
+      // (no apiKey here — the Worker injects the GEMINI_KEY secret server-side)
+      baseUrl: PET_PROXY + "/v1beta"
+    },
+    cf: {
+      api: "cloudflare",
+      // Worker's Cloudflare-AI route; the AI binding needs no key at all.
+      baseUrl: PET_PROXY + "/cf/run"
     }
   },
 
   // ---- selectable models (populate the pet's model dropdown, in order) ----
-  // foreignOnly: true → only reachable on a non-China network; UI tags "(china foreign only)"
-  // cnOnly:      true → only reachable from within China;       UI tags "(china only)"
   models: [
-    { label: "GLM-4-Flash",           provider: "glm",    model: "glm-4-flash",          cnOnly: true },
-    { label: "Gemini 2.5 Flash",      provider: "gemini", model: "gemini-2.5-flash",      foreignOnly: true },
-    { label: "Gemini 2.0 Flash",      provider: "gemini", model: "gemini-2.0-flash",      foreignOnly: true },
-    { label: "Gemini 2.5 Flash-Lite", provider: "gemini", model: "gemini-2.5-flash-lite", foreignOnly: true },
-    { label: "Gemini 3.5 Flash",      provider: "gemini", model: "gemini-3.5-flash",      foreignOnly: true }
+    { label: "GLM-4-Flash",              provider: "glm",    model: "glm-4-flash" },
+    { label: "Gemini 2.5 Flash",         provider: "gemini", model: "gemini-2.5-flash" },
+    { label: "Gemini 2.5 Pro",           provider: "gemini", model: "gemini-2.5-pro" },
+    { label: "Gemini 2.0 Flash",         provider: "gemini", model: "gemini-2.0-flash" },
+    { label: "Gemini 2.5 Flash-Lite",    provider: "gemini", model: "gemini-2.5-flash-lite" },
+    { label: "Gemini 3.5 Flash",         provider: "gemini", model: "gemini-3.5-flash" },
+    { label: "Llama 3.3 70B · Cloudflare", provider: "cf", model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast" },
+    { label: "Qwen 通义千问 · Cloudflare",  provider: "cf", model: "@cf/qwen/qwen2.5-coder-32b-instruct" }
   ],
 
   // ---- region-based default model (chosen automatically by IP on load) ----
-  // China IP  → glm  (foreign models are unreachable there)
+  // China IP  → glm  (domestic, direct, most reliable)
   // non-China → gemini
   defaults: {
     cn:      "glm-4-flash",

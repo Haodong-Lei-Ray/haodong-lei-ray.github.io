@@ -86,12 +86,14 @@
           parts: [{ text: m.content }]
         };
       });
+      // Going through the Cloudflare Worker proxy, the key is injected
+      // server-side, so the browser sends NO key. Only attach x-goog-api-key
+      // if a key is configured (direct/local use without the proxy).
+      var gHeaders = { 'Content-Type': 'application/json' };
+      if (provider.apiKey) gHeaders['x-goog-api-key'] = provider.apiKey;
       return fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': provider.apiKey
-        },
+        headers: gHeaders,
         body: JSON.stringify({
           system_instruction: { parts: [{ text: systemPrompt }] },
           contents: contents,
@@ -107,6 +109,26 @@
           var parts = cand && cand.content && cand.content.parts;
           var text = parts && parts.map(function (p) { return p.text || ''; }).join('');
           if (!text) throw new Error('Gemini: empty response');
+          return text;
+        });
+    }
+
+    if (provider.api === 'cloudflare') {
+      // Cloudflare Workers AI via our Worker's /cf/run route (no key in the browser).
+      // The Worker calls env.AI.run() and returns { response: "..." }.
+      var cfMessages = [{ role: 'system', content: systemPrompt }].concat(history);
+      return fetch(provider.baseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: sel.model, messages: cfMessages })
+      })
+        .then(function (r) {
+          if (!r.ok) throw new Error('Cloudflare AI HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          var text = data && (data.response || (data.result && data.result.response));
+          if (!text) throw new Error('Cloudflare AI: empty response');
           return text;
         });
     }
