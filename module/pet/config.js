@@ -14,7 +14,7 @@ const AI_CONFIG = {
       api: "gemini",
       // request URL is built as baseUrl + "/models/" + model + ":generateContent"
       baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-      apiKey: "AQ.Ab8RN6JUC5jrmFS8y5Fk2o2bNnC5BLYSBIu7Z54awVqZ9yUFfg"
+      apiKey: "AQ.Ab8RN6KAlE_Rcwb8HmUIgskQHSBZJlDOxAWpB59cVfiopXJVdg"
     }
   },
 
