@@ -11,6 +11,39 @@
   --map-sea:  #18243a;   /* shown while tiles load (dark) */
 }
 
+/* colour legend above the map */
+.life-map-legend {
+  display: flex;
+  gap: 1.1rem;
+  margin: 0.2rem 0 0.6rem;
+  font-family: 'VT323', monospace;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+.life-map-legend-item { display: inline-flex; align-items: center; gap: 0.35rem; }
+/* same pixel teardrop SVG as the map markers (injected by lifemap.js) */
+.life-map-legend-dot {
+  display: inline-block;
+  width: 11px;
+  line-height: 0;
+  color: currentColor;
+}
+.life-map-legend-dot .life-map-pin-svg { width: 100%; height: auto; }
+.life-map-legend-item--lived  { color: var(--pin-lived); }
+.life-map-legend-item--travel { color: var(--pin-travel); }
+
+/* inline pins (red + blue) used in the "click 📍 to open the journal" hint */
+.life-map-pin-inline {
+  display: inline-block;
+  width: 10px;
+  line-height: 0;
+  transform: translateY(2px);   /* sit on the text baseline */
+}
+.life-map-pin-inline + .life-map-pin-inline { margin-left: 2px; }
+.life-map-pin-inline--lived  { color: var(--pin-lived); }
+.life-map-pin-inline--travel { color: var(--pin-travel); }
+.life-map-pin-inline .life-map-pin-svg { width: 100%; height: auto; }
+
 /* frame holds the Leaflet map; keep the pixel border + drop shadow */
 .life-map-frame {
   position: relative;
@@ -26,6 +59,26 @@
 }
 .life-map-frame.edit-mode { cursor: crosshair; }
 
+/* "Use Ctrl + scroll to zoom" overlay — flashed on a plain (no-modifier) wheel */
+.life-map-zoom-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 500;            /* above tiles, below popups + controls */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;    /* never block map interaction */
+  background: rgba(20, 24, 34, 0.45);
+  color: #fff;
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  text-align: center;
+  padding: 0 1rem;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.life-map-zoom-hint.visible { opacity: 1; }
+
 /* the Leaflet root must fill the frame */
 .life-map-frame .leaflet-container {
   width: 100%;
@@ -38,15 +91,23 @@
 /* container is a zero-size point at the exact lat/lng; the drop's TIP sits on it */
 .life-map-divicon { width: 0 !important; height: 0 !important; overflow: visible; }
 
+/* marker colours by type: lived = warm rose-red, travel = blue */
+.life-page {
+  --pin-lived:  #c27a7a;   /* places I've lived  (red)  */
+  --pin-travel: #5a8fc2;   /* places I've travelled to (blue) */
+}
+
 .life-map-pin-drop {
   position: absolute;
   left: 0; top: 0;
   width: 15px;            /* small pixel pin — bump to 18px if you want it bigger */
-  color: var(--color-accent);
+  color: var(--pin-travel);
   filter: drop-shadow(1px 1px 0 var(--color-surface));
   cursor: pointer;
   animation: life-pin-bob 1.8s ease-in-out infinite;
 }
+.life-map-divicon--lived  .life-map-pin-drop { color: var(--pin-lived); }
+.life-map-divicon--travel .life-map-pin-drop { color: var(--pin-travel); }
 .life-map-pin-svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
 .life-map-pin-svg .hole { fill: var(--color-surface); }
 .life-map-divicon:hover .life-map-pin-drop { color: var(--color-primary); }

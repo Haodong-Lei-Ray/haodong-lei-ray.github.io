@@ -1,0 +1,91 @@
+{
+  "zoom": 2,
+  "center": null,
+  "edit": false,
+  "spots": [
+    {
+      "type": "travel",
+      "lat": 52.37349178373607, "lng": 4.893869137054972,
+      "title": "Amsterdam · 阿姆斯特丹 🇳🇱",
+      "text": "(2026.2) Helped by kind customs officers — the spot where our Europe trip touched down. 得到了善良的海关人员的帮助，这是我们欧洲之旅落地的地方。"
+    },
+    {
+      "type": "travel",
+      "lat": 48.860706585634055, "lng": 2.3201108661251335,
+      "title": "Paris · 巴黎 🇫🇷 🗼",
+      "text": "(2026.2) A moveable feast — a rainbow over the Seine 🌈. 流动的盛宴，塞纳河的彩虹🌈。"
+    },
+    {
+      "type": "travel",
+      "lat": 45.46340043738844, "lng": 9.183477614067717,
+      "title": "Milan · 米兰 🇮🇹",
+      "text": "(2026.2) A city ringed by snowy peaks — we arrived during the Winter Olympics. 雪山环绕的城市，我们在冬奥会期间来到了这里。"
+    },
+    {
+      "type": "travel",
+      "lat": 46.4936427434733, "lng": 11.343709461192143,
+      "title": "Bolzano · 博尔扎诺 🇮🇹",
+      "text": "(2026.2) A ski town wrapped in church bells; the square gathered to watch the Winter Olympics together — and don't miss the blade-like ridges of the Dolomites. 滑雪小镇，教堂的钟声萦绕。广场上大家一起看冬奥会。当然还有 Dolomites 的刀锋山，别忘了去。"
+    },
+    {
+      "type": "travel",
+      "lat": 41.39565916766474, "lng": 2.16839238813408,
+      "title": "Barcelona · 巴塞罗那 🇪🇸",
+      "text": "(2026.2) Gaudí's dream is José's dream; light in the Sagrada Família falls on a Bible carved in stone. 高迪的梦想就是何塞的梦想。圣家堂的光，照耀在石刻的圣经上。"
+    },
+    {
+      "type": "travel",
+      "lat": 43.697197258062296, "lng": 7.275648520646626,
+      "title": "Nice · 尼斯 🇫🇷",
+      "text": "(2026.2) Carnival crowds, embracing up on Castle Hill. 狂欢节人群，在城堡山上相拥。"
+    },
+    {
+      "type": "travel",
+      "lat": 43.77700118306514, "lng": 7.505016032540992,
+      "title": "Menton · 芒通 🇫🇷",
+      "text": "(2026.2) The winter lemon town is still warm; time slips away forever. 冬季柠檬小镇依然温暖，时间永逝。"
+    },
+    {
+      "type": "travel",
+      "lat": 41.89686828673031, "lng": 12.487465763555308,
+      "title": "Rome · 罗马 🇮🇹",
+      "text": "(2026.2) After a torrential downpour, the sunset glow over St. Peter's Basilica. 磅礴的大雨，迎来的是圣彼得大教堂的晚霞。"
+    },
+    {
+      "type": "travel",
+      "lat": 37.9754153775524, "lng": 23.726854094396344,
+      "title": "Athens · 雅典 🇬🇷",
+      "text": "(2026.2) Easygoing cats wandering through the ruins of Athens. 闲适的猫儿，游走在雅典遗址里。"
+    },
+    {
+      "type": "lived",
+      "lat": 23.095522709679088, "lng": 114.40475098300234,
+      "title": "Huizhou, Guangdong · 广东惠州 🇨🇳",
+      "text": "(2002.2–2020.9) My childhood. 我的童年。"
+    },
+    {
+      "type": "lived",
+      "lat": 20.055349230446158, "lng": 110.33004634343723,
+      "title": "Haikou, Hainan · 海南海口 🇨🇳",
+      "text": "(2020.9–2024.6) Gorgeous sunsets, qingbuliang (a chilled sweet soup) and zaopo vinegar. 绚烂的晚霞，清补凉，糟粕醋。"
+    },
+    {
+      "type": "lived",
+      "lat": 22.48965550438618, "lng": 113.91973767332814,
+      "title": "Shenzhen, Guangdong · 广东深圳 🇨🇳",
+      "text": "(2023.12–2024.3) Among interesting entrepreneurs. 有趣的创业者们。"
+    },
+    {
+      "type": "lived",
+      "lat": 31.889379621192354, "lng": 118.8221048516266,
+      "title": "Nanjing, Jiangsu · 江苏南京 🇨🇳",
+      "text": "(2024.9–2027.6) Mooring at night by the Qinhuai, near the wine-shops; cycling on Purple Mountain. I know so many lovely corners here — a tiny French bistro by Pearl River, Ming-dynasty stone carvings at Xuanwu Lake, and a cow-cat under the old city wall. 夜泊秦淮近酒家，紫金山的骑行。我知道这个城市很多有趣的地方：珍珠河的小法餐店，玄武湖的明代石刻，城墙下的奶牛猫。"
+    },
+    {
+      "type": "lived",
+      "lat": 31.24433154155137, "lng": 121.47892603570399,
+      "title": "Shanghai · 中国上海 🇨🇳",
+      "text": "(2025.10–Now) Jazz city and coffee city. Maybe only I know the little cat on West Nanjing Road. Shanghai never shanghaied you. Decades of stubbornly never snowing. 爵士之城，咖啡之城。南京西路的小猫或许只有我知道。Shanghai never shanghaied you。几十年不下雪的认真。"
+    }
+  ]
+}

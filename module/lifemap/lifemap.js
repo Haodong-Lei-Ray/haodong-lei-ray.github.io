@@ -63,9 +63,10 @@
            '<g class="hole">' + runRects(PIN_SPRITE, 'o') + '</g></svg>';
   }
 
-  function makePinIcon(title) {
+  function makePinIcon(title, type) {
+    var kind = type === 'lived' ? 'lived' : 'travel';
     return L.divIcon({
-      className: 'life-map-divicon',
+      className: 'life-map-divicon life-map-divicon--' + kind,
       html:
         '<span class="life-map-pin-drop">' + buildPinSVG() + '</span>' +
         '<span class="life-map-pin-label">' + (title || '') + '</span>',
@@ -85,17 +86,28 @@
     return html;
   }
 
-  function init() {
-    var frame = document.getElementById('lifeMapFrame');
-    if (!frame) return;
-    if (typeof L === 'undefined') {
-      console.warn('[life-map] Leaflet (L) not found — did you add the Leaflet <script> in life.html?');
-      return;
-    }
-    if (typeof LIFE_MAP === 'undefined') return;
+  // Spots + map options now live in module/lifemap/spots.json — edit that file
+  // to add places. Each spot: { type, lat, lng, title, text, img }.
+  //   type : 'lived' or 'travel' (controls the marker colour)
+  var SPOTS_URL = 'module/lifemap/spots.json';
 
-    var glyph = LIFE_MAP.pinIcon || '◆';
-    var points = (LIFE_MAP.points || []).filter(function (p) {
+  function loadConfig() {
+    return fetch(SPOTS_URL, { cache: 'no-cache' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .catch(function (err) {
+        console.warn('[life-map] could not load ' + SPOTS_URL + ' (' + err.message +
+                     '). Serve the site over http(s) (not file://). ' +
+                     'Falling back to window.LIFE_MAP if present.');
+        return (typeof LIFE_MAP !== 'undefined') ? LIFE_MAP : null;
+      });
+  }
+
+  function render(frame, cfg) {
+    // accept either `spots` (JSON) or legacy `points` (old config.js)
+    var spots = (cfg.spots || cfg.points || []).filter(function (p) {
       return typeof p.lat === 'number' && typeof p.lng === 'number';
     });
 
@@ -116,9 +128,9 @@
 
     // markers
     var markers = [];
-    points.forEach(function (pt) {
+    spots.forEach(function (pt) {
       var m = L.marker([pt.lat, pt.lng], {
-        icon: makePinIcon(pt.title),
+        icon: makePinIcon(pt.title, pt.type),
         title: pt.title || ''
       }).addTo(map);
       m.bindPopup(popupHTML(pt), {
@@ -131,18 +143,18 @@
     });
 
     // initial view: explicit center, else fit all pins, else world
-    if (Array.isArray(LIFE_MAP.center)) {
-      map.setView(LIFE_MAP.center, LIFE_MAP.zoom || 2);
+    if (Array.isArray(cfg.center)) {
+      map.setView(cfg.center, cfg.zoom || 2);
     } else if (markers.length === 1) {
-      map.setView(points[0], LIFE_MAP.zoom || 4);
+      map.setView(spots[0], cfg.zoom || 4);
     } else if (markers.length > 1) {
       var group = L.featureGroup(markers);
       map.fitBounds(group.getBounds().pad(0.35));
-      if (map.getZoom() > (LIFE_MAP.zoom != null ? LIFE_MAP.zoom + 4 : 6)) {
-        map.setZoom(LIFE_MAP.zoom != null ? LIFE_MAP.zoom + 4 : 6);
+      if (map.getZoom() > (cfg.zoom != null ? cfg.zoom + 4 : 6)) {
+        map.setZoom(cfg.zoom != null ? cfg.zoom + 4 : 6);
       }
     } else {
-      map.setView([20, 0], LIFE_MAP.zoom || 2);
+      map.setView([20, 0], cfg.zoom || 2);
     }
 
     // re-theme tiles when the toggle flips data-theme on <html>
@@ -156,22 +168,59 @@
     setTimeout(function () { map.invalidateSize(); }, 0);
     window.addEventListener('resize', function () { map.invalidateSize(); });
 
-    // EDIT mode: click the map to copy a ready-to-paste config snippet
-    if (LIFE_MAP.edit) {
+    // Ctrl/⌘ + wheel zooms; plain wheel scrolls the page (and flashes a hint).
+    // (Mac trackpad pinch fires ctrl+wheel too, so pinch-to-zoom works as well.)
+    var zoomHint = L.DomUtil.create('div', 'life-map-zoom-hint', frame);
+    zoomHint.innerHTML = '按住 Ctrl 滚动缩放 · Use Ctrl + scroll to zoom';
+    var hintTimer;
+    frame.addEventListener('wheel', function (e) {
+      if (e.ctrlKey || e.metaKey) {
+        if (!map.scrollWheelZoom.enabled()) map.scrollWheelZoom.enable();
+        zoomHint.classList.remove('visible');
+      } else {
+        if (map.scrollWheelZoom.enabled()) map.scrollWheelZoom.disable();
+        zoomHint.classList.add('visible');
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(function () { zoomHint.classList.remove('visible'); }, 1100);
+      }
+    }, { passive: true, capture: true });
+
+    // EDIT mode: click the map to copy a ready-to-paste spots.json entry
+    if (cfg.edit) {
       frame.classList.add('edit-mode');
       map.on('click', function (e) {
         var lat = e.latlng.lat.toFixed(4);
         var lng = e.latlng.lng.toFixed(4);
-        var snippet = '{ lat: ' + lat + ', lng: ' + lng + ", title: '', text: '', img: '' },";
+        var snippet = '{ "type": "travel", "lat": ' + lat + ', "lng": ' + lng +
+                      ', "title": "", "text": "" },';
         console.log('[life-map] ' + snippet);
         if (navigator.clipboard) navigator.clipboard.writeText(snippet);
         L.popup({ className: 'life-map-leaflet-popup' })
           .setLatLng(e.latlng)
           .setContent('<div class="life-map-popup-title">' + lat + ', ' + lng + '</div>' +
-                      '<div class="life-map-popup-text">copied to clipboard ✔ — paste into config.js</div>')
+                      '<div class="life-map-popup-text">copied to clipboard ✔ — paste into spots.json</div>')
           .openOn(map);
       });
     }
+  }
+
+  // fill the legend dots + the inline hint pin with the same pixel teardrop
+  function fillLegend() {
+    var dots = document.querySelectorAll('.life-map-legend-dot, .life-map-pin-inline');
+    for (var i = 0; i < dots.length; i++) dots[i].innerHTML = buildPinSVG();
+  }
+
+  function init() {
+    fillLegend();
+    var frame = document.getElementById('lifeMapFrame');
+    if (!frame) return;
+    if (typeof L === 'undefined') {
+      console.warn('[life-map] Leaflet (L) not found — did you add the Leaflet <script> in life.html?');
+      return;
+    }
+    loadConfig().then(function (cfg) {
+      if (cfg) render(frame, cfg);
+    });
   }
 
   if (document.readyState === 'loading') {
