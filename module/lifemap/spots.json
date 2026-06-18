@@ -58,6 +58,36 @@
       "text": "(2026.2) Easygoing cats wandering through the ruins of Athens. 闲适的猫儿，游走在雅典遗址里。"
     },
     {
+      "type": "travel",
+      "lat": -7.941425664066097, "lng": 112.96060392317874,
+      "title": "Mount Bromo · 布罗莫火山 🇮🇩",
+      "text": "(2024.3) Worth coming to see with your own eyes! 亲自来看看会很好！"
+    },
+    {
+      "type": "travel",
+      "lat": -8.734911031015134, "lng": 115.53882432497107,
+      "title": "Nusa Penida · 佩尼达岛 🇮🇩",
+      "text": "(2024.3) Fell off a motorbike and it left a scar on my arm — but hey, that's a souvenir! 骑摩托车摔了，给我的手臂留下了疤痕。不过这个是 souvenir！"
+    },
+    {
+      "type": "travel",
+      "lat": -8.156538358919601, "lng": 115.02847136834305,
+      "title": "Lovina · 罗维纳 🇮🇩",
+      "text": "(2024.3) Remember to wake up early to chase the dolphins 🐬. 记得早起来追海豚🐬。"
+    },
+    {
+      "type": "travel",
+      "lat": -8.66610212366476, "lng": 115.1391921111971,
+      "title": "Bali 巴厘岛🇮🇩",
+      "text": "(2024.3) A fun seaside bar. 有趣的海边酒吧。"
+    },
+    {
+      "type": "travel",
+      "lat": 1.2915009703401907, "lng": 103.84874722459529,
+      "title": "Singapore · 新加坡 🇸🇬",
+      "text": "(2024.3) The Merlion glitters beneath Marina Bay Sands; low on budget, we ended up sleeping at the airport. 鱼尾狮在金沙酒店下闪耀。我们经费不足就去睡了机场。"
+    },
+    {
       "type": "lived",
       "lat": 23.095522709679088, "lng": 114.40475098300234,
       "title": "Huizhou, Guangdong · 广东惠州 🇨🇳",
