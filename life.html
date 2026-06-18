@@ -8,8 +8,13 @@
 
   <!-- Favicon (animated) -->
   <link rel="icon" type="image/gif" href="assets/images/icon/website-icon.gif">
-  <link rel="stylesheet" href="css/style.css?v=8">
+  <link rel="stylesheet" href="css/style.css?v=9">
   <link rel="stylesheet" href="css/fonts.css">
+
+  <!-- Real-world map: Leaflet + its pixel-themed overrides -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="module/lifemap/lifemap.css?v=2">
 </head>
 <body>
 
@@ -126,7 +131,10 @@
   <script src="js/main.js"></script>
   <script src="module/pet/config.js"></script>
   <script src="module/pet/pet.js"></script>
-  <script src="module/lifemap/config.js"></script>
-  <script src="module/lifemap/lifemap.js"></script>
+  <!-- Leaflet must load BEFORE the life-map script -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="module/lifemap/config.js?v=2"></script>
+  <script src="module/lifemap/lifemap.js?v=2"></script>
 </body>
 </html>

@@ -1,0 +1,141 @@
+/* ========== Life Map (REAL-WORLD map — Leaflet) ==========
+   Replaces the old pixel-bitmap map styles.
+   In css/style.css, swap the old "Life Map (pixel travel map)" block
+   (everything from that comment to the end of the file) for this one,
+   OR keep it as a separate file and <link> it after style.css.        */
+
+.life-page {
+  --map-sea:  #cfe3ec;   /* shown while tiles load (light) */
+}
+.life-page[data-theme="dark"] {
+  --map-sea:  #18243a;   /* shown while tiles load (dark) */
+}
+
+/* frame holds the Leaflet map; keep the pixel border + drop shadow */
+.life-map-frame {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  margin: 0.5rem auto 0;
+  aspect-ratio: 2 / 1;
+  background: var(--map-sea);
+  border: 3px solid var(--color-border);
+  box-shadow: 6px 6px 0 var(--color-border);
+  overflow: hidden;
+  z-index: 0;            /* keep below fixed nav / theme toggle */
+}
+.life-map-frame.edit-mode { cursor: crosshair; }
+
+/* the Leaflet root must fill the frame */
+.life-map-frame .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: var(--map-sea);
+  font-family: 'VT323', monospace;
+}
+
+/* ---- pixel teardrop markers (Leaflet divIcon) ---- */
+/* container is a zero-size point at the exact lat/lng; the drop's TIP sits on it */
+.life-map-divicon { width: 0 !important; height: 0 !important; overflow: visible; }
+
+.life-map-pin-drop {
+  position: absolute;
+  left: 0; top: 0;
+  width: 15px;            /* small pixel pin — bump to 18px if you want it bigger */
+  color: var(--color-accent);
+  filter: drop-shadow(1px 1px 0 var(--color-surface));
+  cursor: pointer;
+  animation: life-pin-bob 1.8s ease-in-out infinite;
+}
+.life-map-pin-svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.life-map-pin-svg .hole { fill: var(--color-surface); }
+.life-map-divicon:hover .life-map-pin-drop { color: var(--color-primary); }
+
+.life-map-pin-label {
+  position: absolute;
+  left: 0; top: 0;
+  transform: translate(-50%, calc(-100% - 22px));
+  font-size: 0.8rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  padding: 0 4px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
+.life-map-divicon:hover .life-map-pin-label { opacity: 1; }
+
+/* tip of the teardrop is at the bottom-center, so anchor there */
+@keyframes life-pin-bob {
+  0%, 100% { transform: translate(-50%, -100%); }
+  50%      { transform: translate(-50%, calc(-100% - 2px)); }
+}
+
+/* ---- pixel popups (override Leaflet's rounded card) ---- */
+.life-map-leaflet-popup .leaflet-popup-content-wrapper {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 3px solid var(--color-primary);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--color-border);
+  font-family: 'VT323', monospace;
+}
+.life-map-leaflet-popup .leaflet-popup-content {
+  margin: 0.6rem 0.7rem 0.7rem;
+  line-height: 1.25;
+}
+.life-map-leaflet-popup .leaflet-popup-tip {
+  background: var(--color-surface);
+  border: 3px solid var(--color-primary);
+  box-shadow: none;
+  border-radius: 0;
+}
+.life-map-leaflet-popup a.leaflet-popup-close-button {
+  color: var(--color-text-muted);
+  font-size: 1.2rem;
+  padding: 4px 6px 0 0;
+}
+.life-map-leaflet-popup a.leaflet-popup-close-button:hover { color: var(--color-accent); }
+
+.life-map-popup-title {
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  margin-bottom: 0.2rem;
+}
+.life-map-popup-text {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+}
+.life-map-popup-img { margin-bottom: 0.4rem; }
+.life-map-popup-img img {
+  display: block;
+  width: 100%;
+  border: 2px solid var(--color-border);
+}
+
+/* ---- pixel zoom control + attribution ---- */
+.life-map-frame .leaflet-control-zoom a {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+  border-radius: 0;
+  font-family: 'VT323', monospace;
+}
+.life-map-frame .leaflet-control-zoom a:hover {
+  background: var(--color-bg-alt, var(--color-surface));
+  color: var(--color-accent);
+}
+.life-map-frame .leaflet-control-attribution {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-family: 'VT323', monospace;
+  font-size: 0.7rem;
+}
+.life-map-frame .leaflet-control-attribution a { color: var(--color-primary); }
+
+@media (max-width: 600px) {
+  .life-map-pin-drop { width: 13px; }
+}
