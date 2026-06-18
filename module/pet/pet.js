@@ -33,6 +33,110 @@
   var isWaiting = false;
   var bubbleTimer = null;
 
+  // ---- Model selection -------------------------------------------------
+  var MODELS = (typeof AI_CONFIG !== 'undefined' && AI_CONFIG.models) || [];
+  var currentModel = MODELS[0] || null; // overridden by region detection on load
+
+  // Label shown in the dropdown — region-locked models get a tag.
+  function modelLabel(m) {
+    if (m.foreignOnly) return m.label + ' (outside China only)';
+    if (m.cnOnly) return m.label + ' (China only)';
+    return m.label;
+  }
+
+  // Detect whether the visitor is on a China network. China IP → glm, else gemini.
+  // Fail-safe to 'CN' (glm): if the geo lookup is blocked/slow we assume China,
+  // because foreign models would be unreachable there anyway.
+  function detectRegion() {
+    return new Promise(function (resolve) {
+      var done = false;
+      var finish = function (region) { if (!done) { done = true; resolve(region); } };
+      // hard timeout so the chat is never blocked waiting on geo-IP
+      setTimeout(function () { finish('CN'); }, 3000);
+      fetch('https://ipapi.co/json/', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          var cc = (d && (d.country_code || d.country) || '').toUpperCase();
+          finish(cc === 'CN' ? 'CN' : 'OTHER');
+        })
+        .catch(function () { finish('CN'); });
+    });
+  }
+
+  // Resolve the configured default model id for a region into a MODELS entry.
+  function defaultModelFor(region) {
+    var defs = (AI_CONFIG && AI_CONFIG.defaults) || {};
+    var wantId = region === 'OTHER' ? defs.foreign : defs.cn;
+    var hit = MODELS.filter(function (m) { return m.model === wantId; })[0];
+    return hit || MODELS[0] || null;
+  }
+
+  // Unified chat call — branches on the provider's `api` shape.
+  // Returns a Promise resolving to the reply text.
+  function callModel(sel, systemPrompt, history) {
+    var provider = (AI_CONFIG.providers || {})[sel.provider];
+    if (!provider) return Promise.reject(new Error('unknown provider: ' + sel.provider));
+
+    if (provider.api === 'gemini') {
+      // Google native generateContent: system_instruction + contents[{role,parts}]
+      var url = provider.baseUrl + '/models/' + sel.model + ':generateContent';
+      var contents = history.map(function (m) {
+        return {
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }]
+        };
+      });
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': provider.apiKey
+        },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: contents,
+          generationConfig: { temperature: 0.9 }
+        })
+      })
+        .then(function (r) {
+          if (!r.ok) throw new Error('Gemini HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          var cand = data.candidates && data.candidates[0];
+          var parts = cand && cand.content && cand.content.parts;
+          var text = parts && parts.map(function (p) { return p.text || ''; }).join('');
+          if (!text) throw new Error('Gemini: empty response');
+          return text;
+        });
+    }
+
+    // default: OpenAI-style /chat/completions (GLM)
+    var messages = [{ role: 'system', content: systemPrompt }].concat(history);
+    return fetch(provider.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + provider.apiKey
+      },
+      body: JSON.stringify({
+        model: sel.model,
+        messages: messages,
+        temperature: 0.9,
+        stream: false
+      })
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error('GLM HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        var text = data.choices && data.choices[0] && data.choices[0].message.content;
+        if (!text) throw new Error('GLM: empty response');
+        return text;
+      });
+  }
+
   // ---- Load soul + opening word + name + wait bubble + inject.json ----
   Promise.all([
     fetch('module/pet/assests/main/prompt/soul.md?v=' + Date.now()).then(function (r) { return r.text(); }),
@@ -118,7 +222,10 @@
     chat.innerHTML = ''
       + '<div class="pet-chat-header">'
       + '  <span>' + petName + '</span>'
-      + '  <button class="pet-chat-close">&times;</button>'
+      + '  <div class="pet-chat-header-right">'
+      + '    <select class="pet-model-select" title="Switch model"></select>'
+      + '    <button class="pet-chat-close">&times;</button>'
+      + '  </div>'
       + '</div>'
       + '<div class="pet-chat-body">'
       + '  <div class="pet-chat-msg pet-msg-bot">' + petOpeningWord + '</div>'
@@ -214,6 +321,27 @@
     // Bind chat controls
     bindChat();
 
+    // Populate the model dropdown + pick a default by region (China → glm, else gemini)
+    var modelSel = chatEl.querySelector('.pet-model-select');
+    if (modelSel) {
+      MODELS.forEach(function (m, i) {
+        var opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = modelLabel(m);
+        modelSel.appendChild(opt);
+      });
+      modelSel.addEventListener('change', function () {
+        currentModel = MODELS[parseInt(modelSel.value, 10)] || currentModel;
+      });
+      detectRegion().then(function (region) {
+        var def = defaultModelFor(region);
+        if (def) {
+          currentModel = def;
+          modelSel.value = String(MODELS.indexOf(def));
+        }
+      });
+    }
+
     // Play appear → wait on load
     playAppear();
 
@@ -260,33 +388,25 @@
       if (pageContext) {
         systemPrompt += '\n\n你正在这个网页上陪伴主人，可以参考以下网页内容来回答关于主人的问题：\n' + pageContext;
       }
-      var messages = [{ role: 'system', content: systemPrompt }].concat(chatHistory);
 
-      fetch(AI_CONFIG.url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + AI_CONFIG.apiKey,
-        },
-        body: JSON.stringify({
-          model: AI_CONFIG.model,
-          messages: messages,
-          temperature: 0.9,
-          stream: false,
-        }),
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
+      if (!currentModel) {
+        setThinking(false);
+        chatHistory.pop();
+        addMessage('(no model configured...)', 'bot');
+        return;
+      }
+
+      callModel(currentModel, systemPrompt, chatHistory)
+        .then(function (reply) {
           setThinking(false);
-          var reply = (data.choices && data.choices[0] && data.choices[0].message.content)
-            || '(zzz... pet is sleeping)';
+          reply = reply || '(zzz... pet is sleeping)';
           chatHistory.push({ role: 'assistant', content: reply });
           addMessage(reply, 'bot');
         })
         .catch(function () {
           setThinking(false);
           chatHistory.pop(); // remove the failed user message from history
-          addMessage('(connection lost... try again!)', 'bot');
+          addMessage('(connection lost... zzz 🐾) network failure — maybe you should change the model ↑', 'bot');
         });
     }
 

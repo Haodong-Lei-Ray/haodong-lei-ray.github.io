@@ -764,6 +764,26 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--color-primary-light);
   border-bottom: 2px solid var(--color-border);
 }
+.pet-chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.pet-model-select {
+  font-family: 'VT323', 'ZCOOL KuaiLe', monospace;
+  font-size: 0.8rem;
+  max-width: 150px;
+  padding: 0.1rem 0.3rem;
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  outline: none;
+}
+.pet-model-select:focus {
+  border-color: var(--color-primary);
+}
 .pet-chat-close {
   background: none;
   border: none;
