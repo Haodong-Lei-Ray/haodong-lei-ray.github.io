@@ -43,7 +43,7 @@ const AI_CONFIG = {
     { label: "Gemini 2.5 Flash-Lite",    provider: "gemini", model: "gemini-2.5-flash-lite" },
     { label: "Gemini 3.5 Flash",         provider: "gemini", model: "gemini-3.5-flash" },
     { label: "Llama 3.3 70B · Cloudflare", provider: "cf", model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast" },
-    { label: "Qwen 通义千问 · Cloudflare",  provider: "cf", model: "@cf/qwen/qwen2.5-coder-32b-instruct" }
+    { label: "qwen2.5-coder-32b-instruct · Cloudflare",  provider: "cf", model: "@cf/qwen/qwen2.5-coder-32b-instruct" }
   ],
 
   // ---- region-based default model (chosen automatically by IP on load) ----
