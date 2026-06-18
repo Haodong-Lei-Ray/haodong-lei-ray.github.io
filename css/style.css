@@ -295,6 +295,16 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(194, 122, 122, 0.18);
   border-color: #a86565;
 }
+.social-linkedin {
+  color: #5a8fc2;
+  border: 1px solid #5a8fc2;
+  background: rgba(90, 143, 194, 0.08);
+}
+.social-linkedin:hover {
+  color: #3a6f9e;
+  background: rgba(90, 143, 194, 0.18);
+  border-color: #3a6f9e;
+}
 
 /* ---------- Buttons (pixel style) ---------- */
 .btn {
