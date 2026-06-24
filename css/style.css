@@ -459,6 +459,93 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-text-muted);
 }
 
+.timeline-gpa {
+  font-size: 0.83rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+.timeline-gpa strong {
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Honors (collapsible) ---------- */
+.honors {
+  margin-top: 0.6rem;
+}
+.honors-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.22rem 0.7rem;
+  border-radius: 99px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  opacity: 0.6;
+  transition: background var(--transition), color var(--transition), opacity var(--transition);
+}
+.honors-toggle::-webkit-details-marker {
+  display: none;
+}
+.honors-toggle:hover {
+  background: var(--color-primary);
+  color: #fff;
+  opacity: 1;
+}
+.honors-toggle-icon {
+  font-size: 0.7rem;
+  transition: transform var(--transition);
+}
+.honors[open] .honors-toggle-icon {
+  transform: rotate(180deg);
+}
+.honors-list {
+  list-style: none;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.honors-list li {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--color-border);
+}
+.honors-year {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+.honors-name {
+  flex: 1;
+  min-width: 0;
+}
+.honors-amount {
+  color: var(--color-text-muted);
+}
+.honors-rank {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.05rem 0.5rem;
+  border-radius: 99px;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+  white-space: nowrap;
+}
+
 /* ---------- Publications ---------- */
 .pub-section {
   margin-bottom: 1.5rem;
