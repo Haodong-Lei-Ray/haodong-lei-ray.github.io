@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Speculative Sampling, explained with interactive timelines — why draft-then-verify decoding is provably lossless.">
+  <title>Speculative Sampling · Interactive Explainer | Haodong Lei</title>
+
+  <link rel="icon" type="image/gif" href="../assets/images/icon/website-icon.gif">
+  <!-- Self-hosted pixel + text fonts from the main site -->
+  <link rel="stylesheet" href="../css/fonts.css">
+
+  <style>
+  /* =====================================================================
+     SPECULATIVE SAMPLING — Interactive Explainer
+     Self-contained. Cosmic "Arcane Void" theme (harmonises with the blog
+     portal), pixel-VT323 headings, bilingual EN / 中文, dark & light.
+     ===================================================================== */
+
+  /* ---------- Theme tokens ---------- */
+  :root, [data-theme="dark"] {
+    --bg:        #0b0a1f;
+    --bg2:       #100e28;
+    --surface:   #16142f;
+    --surface2:  #1e1b40;
+    --border:    #2f2b59;
+    --border2:   #423c72;
+    --text:      #eae8ff;
+    --dim:       #aca8de;
+    --mute:      #6f6ba6;
+
+    --violet:    #8b6dff;   /* brand / portal */
+    --violet2:   #ab94ff;
+    --glow:      #5df2ff;   /* cyan glow */
+
+    --target:    #ffcf5c;   /* LLM / target p — the "truth" */
+    --target-d:  #d9a838;
+    --draft:     #22e0ff;   /* SLM / draft q — fast guesser */
+    --draft-d:   #1aa9c4;
+    --accept:    #45e6a4;   /* accepted */
+    --reject:    #ff5f7e;   /* rejected */
+
+    --shadow-hard: 5px 5px 0 rgba(0,0,0,.5);
+    --card-radius: 14px;
+    --font-pixel: 'VT323', monospace;
+    --font-body:  'Inter','Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:  'JetBrains Mono','Fira Code',monospace;
+    --font-cn-title: 'ZCOOL KuaiLe','Noto Sans SC',sans-serif;
+    --nebula-a: rgba(123,47,255,.22);
+    --nebula-b: rgba(34,224,255,.14);
+    --star: #ffffff;
+  }
+  [data-theme="light"] {
+    --bg:        #eef1fb;
+    --bg2:       #e7ebf8;
+    --surface:   #ffffff;
+    --surface2:  #f3f4fd;
+    --border:    #d3d8f0;
+    --border2:   #bcc3ea;
+    --text:      #26243f;
+    --dim:       #55527a;
+    --mute:      #8b88b4;
+
+    --violet:    #6a48e6;
+    --violet2:   #7d5bff;
+    --glow:      #12a5c8;
+
+    --target:    #e0a422;
+    --target-d:  #b9860f;
+    --draft:     #1495c9;
+    --draft-d:   #0f78a3;
+    --accept:    #10a76e;
+    --reject:    #e14766;
+
+    --shadow-hard: 5px 5px 0 rgba(90,90,140,.18);
+    --nebula-a: rgba(123,47,255,.10);
+    --nebula-b: rgba(34,180,220,.10);
+    --star: #6a48e6;
+  }
+
+  @property --spin { syntax:'<angle>'; initial-value:0deg; inherits:false; }
+
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; -webkit-font-smoothing:antialiased; }
+  body {
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.75;
+    font-size:16px;
+    overflow-x:hidden;
+    transition:background .3s, color .3s;
+  }
+
+  /* ---------- Cosmic backdrop: nebula + starfield ---------- */
+  #cosmos {
+    position:fixed; inset:0; z-index:-3; pointer-events:none;
+    background:
+      radial-gradient(1200px 820px at 18% 8%,  var(--nebula-a), transparent 60%),
+      radial-gradient(1000px 760px at 86% 88%, var(--nebula-b), transparent 58%),
+      radial-gradient(900px 900px at 62% 40%,  rgba(139,109,255,.10), transparent 60%),
+      var(--bg);
+    transition:background .3s;
+  }
+  #stars, #stars2, #stars3 {
+    position:fixed; left:0; top:0; width:2px; height:2px; border-radius:50%;
+    z-index:-2; pointer-events:none; background:transparent;
+  }
+  #stars  { animation:starDrift 140s linear infinite; }
+  #stars2 { animation:starDrift 90s  linear infinite; opacity:.75; }
+  #stars3 { animation:starDrift 60s  linear infinite; opacity:.5; }
+  @keyframes starDrift { from{transform:translateY(0)} to{transform:translateY(-2000px)} }
+
+  /* ---------- Top controls ---------- */
+  .top-nav {
+    display:flex; gap:1.4rem; align-items:center;
+    max-width:1000px; margin:0 auto; padding:1.15rem 1.5rem .2rem;
+    position:relative; z-index:5;
+  }
+  .top-nav a {
+    font-family:var(--font-pixel); font-size:1.15rem; letter-spacing:.03em;
+    color:var(--dim); text-decoration:none; padding-bottom:.25rem;
+    border-bottom:2px solid transparent; transition:.2s;
+  }
+  .top-nav a:hover, .top-nav a.active { color:var(--violet2); border-bottom-color:var(--violet2); }
+  .top-nav .spacer { flex:1; }
+
+  .chip-btn {
+    font-family:var(--font-pixel); font-size:1rem; letter-spacing:.03em;
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.28rem .7rem; border:2px solid var(--border2); border-radius:8px;
+    background:var(--surface); color:var(--dim); cursor:pointer; transition:.2s;
+  }
+  .chip-btn:hover { color:var(--violet2); border-color:var(--violet2); box-shadow:0 0 14px rgba(139,109,255,.35); }
+
+  /* ---------- Reading progress ---------- */
+  #progress { position:fixed; top:0; left:0; height:3px; width:0;
+    background:linear-gradient(90deg,var(--violet),var(--glow)); z-index:100;
+    box-shadow:0 0 10px var(--glow); }
+
+  /* ---------- Layout ---------- */
+  .wrap { max-width:1000px; margin:0 auto; padding:0 1.5rem; }
+  .narrow { max-width:760px; margin:0 auto; }
+
+  section { padding:3.4rem 0; position:relative; }
+  .lead { font-size:1.05rem; color:var(--dim); }
+
+  h1,h2,h3,h4 { font-family:var(--font-pixel); font-weight:400; line-height:1.1; letter-spacing:.02em; }
+  h2 { font-size:2.4rem; color:var(--text); margin-bottom:.4rem;
+       text-shadow:2px 2px 0 rgba(139,109,255,.25); }
+  h3 { font-size:1.7rem; color:var(--violet2); margin:1.6rem 0 .6rem; }
+  .kicker { font-family:var(--font-pixel); font-size:1.15rem; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--glow); opacity:.85; }
+  p { margin:.85rem 0; }
+  p .en, p .zh { }
+  a.inline { color:var(--glow); text-decoration:none; border-bottom:1px dashed var(--glow); }
+  a.inline:hover { color:var(--violet2); }
+
+  /* bilingual toggle */
+  .zh { display:none; }
+  body.lang-zh .en { display:none; }
+  body.lang-zh .zh { display:inline; }
+  body.lang-zh { font-family:var(--font-body); }
+  body.lang-zh .zh { }
+
+  strong { color:var(--text); font-weight:600; }
+  .hl-target { color:var(--target); font-weight:600; }
+  .hl-draft  { color:var(--draft);  font-weight:600; }
+  .hl-accept { color:var(--accept); font-weight:600; }
+  .hl-reject { color:var(--reject); font-weight:600; }
+
+  /* ---------- Cards / widgets ---------- */
+  .card {
+    background:color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border:2px solid var(--border); border-radius:var(--card-radius);
+    padding:1.5rem 1.6rem; margin:1.5rem 0;
+    box-shadow:var(--shadow-hard);
+  }
+  .card.glow { border-color:var(--border2); box-shadow:var(--shadow-hard), 0 0 44px rgba(93,242,255,.10); }
+  .widget-label {
+    font-family:var(--font-pixel); font-size:1.15rem; letter-spacing:.05em;
+    color:var(--glow); display:flex; align-items:center; gap:.5rem; margin-bottom:.2rem;
+  }
+  .widget-label .tag {
+    font-size:.62rem; font-family:var(--font-body); letter-spacing:.14em; text-transform:uppercase;
+    padding:.12rem .5rem; border-radius:99px; background:var(--surface2);
+    border:1px solid var(--border2); color:var(--dim); font-weight:600;
+  }
+  .hint { font-size:.82rem; color:var(--mute); font-family:var(--font-mono); }
+
+  /* token chips */
+  .tok {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:2.1rem; height:2.1rem; padding:0 .4rem;
+    border-radius:8px; font-size:1.15rem; font-family:var(--font-mono);
+    border:2px solid var(--border2); background:var(--surface2);
+    transition:.25s;
+  }
+  .tok.love { background:rgba(255,110,180,.14); border-color:#ff8ec2; }
+  .tok.none { background:rgba(180,190,220,.12); border-color:#9aa6cc; }
+  .tok.hate { background:rgba(60,70,110,.35);  border-color:#5a648f; }
+
+  /* buttons */
+  .btn {
+    font-family:var(--font-pixel); font-size:1.05rem; letter-spacing:.03em;
+    padding:.4rem 1rem; border-radius:9px; cursor:pointer; transition:.2s;
+    border:2px solid var(--violet); background:var(--violet); color:#fff;
+  }
+  .btn:hover { box-shadow:0 0 18px rgba(139,109,255,.55); transform:translateY(-1px); }
+  .btn.ghost { background:transparent; color:var(--violet2); }
+  .btn.ghost:hover { background:rgba(139,109,255,.12); }
+  .btn:active { transform:translateY(1px); }
+  .btn-row { display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; margin-top:.6rem; }
+
+  /* sliders */
+  .slider-row { display:flex; align-items:center; gap:.8rem; margin:.5rem 0; flex-wrap:wrap; }
+  .slider-row label { font-family:var(--font-mono); font-size:.82rem; color:var(--dim); min-width:132px; }
+  input[type=range] { -webkit-appearance:none; appearance:none; height:6px; border-radius:99px;
+    background:var(--border); outline:none; flex:1; min-width:120px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:var(--violet2); border:2px solid #fff; cursor:pointer; box-shadow:0 0 10px rgba(139,109,255,.6); }
+  input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%;
+    background:var(--violet2); border:2px solid #fff; cursor:pointer; }
+  .val { font-family:var(--font-mono); font-size:.85rem; color:var(--glow); min-width:44px; text-align:right; }
+
+  /* math */
+  .fx { font-family:var(--font-mono); background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:.15rem .45rem; white-space:nowrap; }
+  .eq {
+    font-family:var(--font-mono); background:var(--bg2); border:1px solid var(--border);
+    border-left:3px solid var(--violet); border-radius:8px; padding:.9rem 1.1rem; margin:1rem 0;
+    overflow-x:auto; font-size:.95rem; color:var(--dim); line-height:2;
+  }
+  .eq b { color:var(--text); }
+  .frac { display:inline-flex; flex-direction:column; text-align:center; vertical-align:middle;
+    margin:0 .15rem; }
+  .frac > span:first-child { border-bottom:1px solid currentColor; padding:0 .3rem; }
+  .frac > span:last-child { padding:0 .3rem; }
+  sub { font-size:.7em; }
+
+  /* callout */
+  .callout { border-left:3px solid var(--glow); background:rgba(93,242,255,.06);
+    border-radius:8px; padding:.9rem 1.1rem; margin:1.2rem 0; font-size:.95rem; color:var(--dim); }
+  .callout.warn { border-color:var(--target); background:rgba(255,207,92,.07); }
+
+  /* bar chart */
+  .bars { display:flex; align-items:flex-end; gap:1.4rem; height:190px; padding:.5rem 0; }
+  .bar-group { display:flex; flex-direction:column; align-items:center; gap:.4rem; flex:1; }
+  .bar-stack { position:relative; width:100%; max-width:74px; height:150px;
+    display:flex; flex-direction:column-reverse; }
+  .bar-seg { width:100%; transition:height .4s cubic-bezier(.2,.8,.2,1); border-radius:4px 4px 0 0; }
+  .bar-cap { font-family:var(--font-mono); font-size:.78rem; color:var(--dim); }
+
+  /* reveal */
+  .reveal { opacity:0; transform:translateY(26px); transition:opacity .7s, transform .7s; }
+  .reveal.in { opacity:1; transform:none; }
+
+  /* stat pills */
+  .stats { display:flex; gap:.8rem; flex-wrap:wrap; margin-top:.8rem; }
+  .stat { flex:1; min-width:120px; background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:.6rem .8rem; }
+  .stat .k { font-family:var(--font-mono); font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); }
+  .stat .v { font-family:var(--font-pixel); font-size:1.7rem; color:var(--text); line-height:1.1; }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+  @media (max-width:720px){ .grid2 { grid-template-columns:1fr; } }
+
+  /* =====================  HERO  ===================== */
+  .hero { text-align:center; padding:2.6rem 0 1.4rem; }
+  .portal-hero {
+    width:220px; aspect-ratio:1; margin:1rem auto 1.6rem; position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .portal-ring {
+    position:absolute; inset:0; border-radius:50%;
+    background:conic-gradient(from var(--spin),
+      var(--glow) 0deg, var(--draft) 80deg, var(--violet) 170deg,
+      var(--reject) 240deg, var(--glow) 360deg);
+    -webkit-mask:radial-gradient(circle, transparent 44%, #000 50%);
+            mask:radial-gradient(circle, transparent 44%, #000 50%);
+    animation:spin 7s linear infinite;
+    filter:saturate(1.2);
+  }
+  .portal-ring.inner { inset:16%; animation:spinRev 5s linear infinite; filter:blur(1px) saturate(1.3); opacity:.85;
+    background:conic-gradient(from calc(var(--spin) * -1),
+      transparent 0deg, var(--violet2) 120deg, transparent 240deg, var(--glow) 360deg); }
+  @keyframes spin { to { --spin:360deg; } }
+  @keyframes spinRev { to { --spin:360deg; } }
+  .portal-core {
+    width:46%; aspect-ratio:1; border-radius:50%;
+    background:radial-gradient(circle at 50% 40%, #fff, var(--glow) 30%, var(--violet) 78%, #1a0b3a 100%);
+    box-shadow:0 0 12px var(--glow),0 0 34px rgba(93,242,255,.6),0 0 70px rgba(139,109,255,.5),
+      inset 0 0 24px rgba(255,255,255,.5);
+    animation:breathe 3.4s ease-in-out infinite;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem;
+  }
+  @keyframes breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+  .hero h1 { font-size:clamp(2.6rem,7vw,4.6rem); color:var(--text);
+    text-shadow:3px 3px 0 rgba(139,109,255,.35),0 0 40px rgba(93,242,255,.25); }
+  .hero .sub { font-size:1.15rem; color:var(--dim); max-width:640px; margin:.6rem auto 0; }
+  .hero .cn { font-family:var(--font-cn-title); font-size:1.4rem; color:var(--violet2); margin-top:.3rem; }
+  .byline { font-family:var(--font-mono); font-size:.8rem; color:var(--mute); margin-top:1rem; }
+
+  /* race animation */
+  .race { display:grid; grid-template-columns:auto 1fr; gap:.5rem 1rem; align-items:center; margin-top:.4rem; }
+  .race .who { font-family:var(--font-pixel); font-size:1.1rem; text-align:right; }
+  .race .tape { display:flex; gap:.35rem; flex-wrap:wrap; min-height:2.3rem; align-items:center; }
+  .race .clock { font-family:var(--font-mono); font-size:.8rem; color:var(--mute); grid-column:2; }
+  .mini-tok { width:1.5rem; height:1.5rem; border-radius:5px; display:inline-flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:.85rem; border:1px solid var(--border2); background:var(--surface2);
+    opacity:0; transform:scale(.5); transition:.25s; }
+  .mini-tok.show { opacity:1; transform:none; }
+  .mini-tok.g { background:rgba(69,230,164,.2); border-color:var(--accept); color:var(--accept); }
+  .mini-tok.d { background:rgba(34,224,255,.16); border-color:var(--draft); color:var(--draft); }
+  .mini-tok.r { background:rgba(255,95,126,.16); border-color:var(--reject); color:var(--reject); text-decoration:line-through; }
+
+  /* timeline widget */
+  .tl-grid { display:flex; flex-direction:column; gap:.55rem; }
+  .tl-row { display:grid; grid-template-columns:64px 1fr; gap:.7rem; align-items:center; }
+  .tl-label { font-family:var(--font-mono); font-size:.72rem; color:var(--mute); text-align:right; }
+  .tl-cells { display:flex; gap:.5rem; flex-wrap:wrap; }
+  .tl-cell { position:relative; }
+  .verdict { position:absolute; top:-9px; right:-9px; width:20px; height:20px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:.72rem; color:#fff; font-family:var(--font-mono); }
+  .verdict.ok { background:var(--accept); box-shadow:0 0 10px rgba(69,230,164,.7); }
+  .verdict.no { background:var(--reject); box-shadow:0 0 10px rgba(255,95,126,.7); }
+  .arrow { text-align:center; color:var(--mute); font-family:var(--font-pixel); font-size:1.3rem; margin:.1rem 0; }
+  .match-badge { display:inline-flex; align-items:center; gap:.4rem; font-family:var(--font-pixel);
+    font-size:1.15rem; padding:.3rem .8rem; border-radius:99px; margin-top:.4rem; }
+  .match-badge.yes { color:var(--accept); background:rgba(69,230,164,.12); border:1px solid var(--accept); }
+
+  /* dice / acceptance gate */
+  .gate-stage { position:relative; height:180px; border:1px solid var(--border); border-radius:10px;
+    background:linear-gradient(180deg,var(--bg2),var(--surface)); overflow:hidden; }
+  .gate-scale { position:absolute; left:12px; top:10px; bottom:10px; width:44px;
+    border-left:2px solid var(--border2); }
+  .thresh { position:absolute; left:8px; right:8px; height:2px; background:var(--accept);
+    box-shadow:0 0 10px var(--accept); transition:bottom .3s; }
+  .thresh .lab { position:absolute; right:6px; top:-1.4em; font-family:var(--font-mono); font-size:.72rem; color:var(--accept); }
+  .thresh-zone { position:absolute; left:0; right:0; bottom:0; background:rgba(69,230,164,.08); transition:height .3s; }
+  .dice { position:absolute; width:34px; height:34px; border-radius:8px; left:50%; transform:translateX(-50%);
+    background:var(--surface2); border:2px solid var(--violet2); display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:.8rem; color:var(--text); transition:bottom .5s cubic-bezier(.3,1.4,.5,1); }
+
+  /* histogram */
+  .histo { display:flex; align-items:flex-end; gap:1.4rem; height:170px; margin-top:.6rem; position:relative; }
+  .hcol { flex:1; display:flex; flex-direction:column; align-items:center; gap:.35rem; height:100%; justify-content:flex-end; position:relative; }
+  .hbar-wrap { position:relative; width:100%; max-width:80px; height:130px; display:flex; flex-direction:column-reverse; }
+  .hbar { width:100%; background:linear-gradient(180deg,var(--draft),var(--draft-d)); border-radius:4px 4px 0 0;
+    transition:height .15s; }
+  .htarget { position:absolute; left:-4px; right:-4px; height:3px; background:var(--target);
+    box-shadow:0 0 8px var(--target); border-radius:2px; }
+  .htarget .lab { position:absolute; right:-2px; top:-1.5em; font-family:var(--font-mono); font-size:.66rem; color:var(--target); white-space:nowrap; }
+
+  /* footer */
+  footer { border-top:1px solid var(--border); padding:2.4rem 0 3rem; text-align:center; color:var(--mute); }
+  footer a { color:var(--dim); }
+  .further { display:flex; flex-direction:column; gap:.5rem; text-align:left; }
+  .ref { font-size:.9rem; color:var(--dim); padding:.5rem .8rem; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface); }
+  .ref b { color:var(--text); }
+
+  .method-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:.9rem; }
+  .method { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.9rem 1rem; }
+  .method h4 { font-family:var(--font-pixel); font-size:1.25rem; color:var(--violet2); margin-bottom:.2rem; }
+  .method p { font-size:.85rem; color:var(--dim); margin:0; }
+
+  /* light-theme contrast touch-ups */
+  [data-theme="light"] .kicker { color:#0d7a95; opacity:1; }
+  [data-theme="light"] .byline { color:#6a679a; }
+  [data-theme="light"] .widget-label { color:#0d7a95; }
+  [data-theme="light"] .hero h1 { text-shadow:2px 2px 0 rgba(106,72,230,.22), 0 0 30px rgba(18,165,200,.12); }
+  [data-theme="light"] #cosmos { --nebula-a:rgba(106,72,230,.12); --nebula-b:rgba(18,165,200,.10); }
+
+  @media (prefers-reduced-motion:reduce){
+    .portal-ring,.portal-core,#stars,#stars2,#stars3 { animation:none !important; }
+  }
+  @media (max-width:600px){
+    h2{font-size:2rem;} .tl-row{grid-template-columns:52px 1fr;}
+    .top-nav{gap:.9rem;} .top-nav a{font-size:1rem;}
+  }
+  </style>
+</head>
+<body class="lang-en">
+
+  <div id="cosmos"></div>
+  <div id="stars"></div><div id="stars2"></div><div id="stars3"></div>
+  <div id="progress"></div>
+
+  <!-- ============ NAV ============ -->
+  <nav class="top-nav">
+    <a href="../index.html">Home</a>
+    <a href="../life.html">Life</a>
+    <a href="../blog.html" class="active">Blog</a>
+    <span class="spacer"></span>
+    <button class="chip-btn" id="langToggle" title="切换语言 / Toggle language">中文</button>
+    <button class="chip-btn" id="themeToggle" title="Toggle theme">☀︎</button>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero wrap">
+    <div class="kicker">Interactive Explainer</div>
+    <div class="portal-hero">
+      <div class="portal-ring"></div>
+      <div class="portal-ring inner"></div>
+      <div class="portal-core">⚡</div>
+    </div>
+    <h1>Speculative Sampling</h1>
+    <p class="cn">投机采样 · 为什么它能<strong>无损</strong>加速</p>
+    <p class="sub">
+      <span class="en">A small model guesses ahead, a big model checks the work — and the answer is <em>provably identical</em> to the big model alone. Here is <strong>why</strong>, built from playable timelines.</span>
+      <span class="zh">小模型抢跑猜答案,大模型只负责验收 —— 而最终输出和"只用大模型"<em>分毫不差</em>。这篇用可以玩的"时间线"讲清楚它<strong>为什么无损</strong>。</span>
+    </p>
+
+    <div class="card glow" style="text-align:left; max-width:660px; margin:2rem auto 0;">
+      <div class="widget-label">
+        <span class="en">One token at a time vs. draft-then-verify</span>
+        <span class="zh">逐字生成 vs. 草稿再验收</span>
+        <span class="tag">live</span>
+      </div>
+      <div class="race" id="race">
+        <div class="who" style="color:var(--mute)">Vanilla</div>
+        <div class="tape" id="tapeSlow"></div>
+        <div class="who" style="color:var(--violet2)">Spec.</div>
+        <div class="tape" id="tapeFast"></div>
+        <div class="clock" id="raceClock">t = 0</div>
+      </div>
+      <p class="hint" style="margin-top:.6rem">
+        <span class="en">Both produce the same text. Speculative decoding just gets there in fewer expensive steps.</span>
+        <span class="zh">两者输出完全相同,投机解码只是用更少的"昂贵步骤"到达终点。</span>
+      </p>
+    </div>
+    <div class="byline">by Haodong&nbsp;Lei · 雷浩东 &nbsp;·&nbsp; scroll to explore ↓</div>
+  </header>
+
+  <!-- ============ §0 WHY ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§0</div>
+      <h2><span class="en">Why bother?</span><span class="zh">为什么要这么做?</span></h2>
+      <p class="lead">
+        <span class="en">Generating text from an LLM is <strong>autoregressive</strong>: to produce the next token, the model must read every weight in from GPU memory — then it emits <em>one</em> token and does it all again. Decoding is <strong>memory-bandwidth bound</strong>, so the GPU's math units sit mostly idle.</span>
+        <span class="zh">大模型生成文本是<strong>自回归</strong>的:每吐一个字,都要把所有权重从显存里搬一遍,然后只产出<em>一个</em> token,再重来。解码是<strong>受显存带宽限制</strong>的,GPU 的算力大部分时间在空转。</span>
+      </p>
+      <p>
+        <span class="en">Key observation: checking <em>k</em> tokens in a single forward pass costs almost the same wall-clock time as generating <em>one</em>, because the expensive weight-loading happens only once. That spare compute is a free lunch — if only we had candidate tokens to check.</span>
+        <span class="zh">关键观察:在一次前向里<em>同时校验 k 个</em> token,和只生成<em>一个</em>的耗时几乎一样 —— 因为昂贵的"搬权重"只发生一次。这些闲置算力就是免费的午餐 —— 只要我们手上有候选 token 可以校验。</span>
+      </p>
+      <p>
+        <span class="en">So: let a cheap <span class="hl-draft">draft model (SLM)</span> propose a burst of tokens, then let the expensive <span class="hl-target">target model (LLM)</span> verify them all at once. Accept the good ones, fix the first bad one, repeat. The whole trick lives in <em>how</em> you accept and fix — do it right and the output distribution is <strong>exactly</strong> the target's.</span>
+        <span class="zh">于是:让便宜的<span class="hl-draft">草稿模型(SLM)</span>一口气提议一串 token,再让昂贵的<span class="hl-target">目标模型(LLM)</span>一次性校验。接受对的、修正第一个错的、然后重复。全部玄机都在<em>如何</em>接受与修正 —— 做对了,输出分布就和目标模型<strong>完全一致</strong>。</span>
+      </p>
+      <div class="callout">
+        <span class="en"><strong>The whole article in one line:</strong> the accepted-or-resampled token has probability <span class="fx">min(p,q) + P(reject)·(p−q)<sub>+</sub> = p</span>. That equality <em>is</em> losslessness. Everything below is a story for why it's true.</span>
+        <span class="zh"><strong>全文一句话:</strong>最终"接受或重采样"的 token 概率为 <span class="fx">min(p,q) + P(拒绝)·(p−q)<sub>+</sub> = p</span>。这个等式<em>就是</em>无损。下面全是为了讲清它为什么成立。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ §1 CAST ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§1</div>
+      <h2><span class="en">Meet p and q</span><span class="zh">先认识 p 和 q</span></h2>
+      <p class="lead">
+        <span class="en">Two probability distributions over the same vocabulary. <span class="hl-target">p</span> is what the target LLM <em>wants</em>. <span class="hl-draft">q</span> is what the draft SLM <em>proposes</em>. Our only job: turn samples from q into samples that look like they came from p — without ever fully trusting q.</span>
+        <span class="zh">同一个词表上的两个概率分布。<span class="hl-target">p</span> 是目标大模型<em>想要</em>的,<span class="hl-draft">q</span> 是草稿小模型<em>提议</em>的。我们唯一要做的:把从 q 采样得到的 token,变成看起来像从 p 采样出来的 —— 且永远不完全相信 q。</span>
+      </p>
+      <p>
+        <span class="en">To make it concrete, we shrink the vocabulary to two words, straight from the original article:</span>
+        <span class="zh">为了具体,我们把词表缩到只有两个词(直接沿用原文的设定):</span>
+        <span class="tok love">💗</span> <strong>love</strong> / 爱 &nbsp;&nbsp; <span class="tok hate">🖤</span> <strong>hate</strong> / 恨.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ §2 TIMELINES (core) ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§2 · the big idea</div>
+      <h2><span class="en">Five timelines</span><span class="zh">五条时间线</span></h2>
+      <p class="lead">
+        <span class="en">Imagine sampling the next token <strong>5 times</strong> from each model — five parallel timelines. The target LLM's five draws land as <span class="hl-target">💗💗💗🖤🖤</span> (3 love, 2 hate). The draft SLM's five draws land as <span class="hl-draft">💗🖤🖤🖤🖤</span> (1 love, 4 hate).</span>
+        <span class="zh">想象从每个模型各采样<strong> 5 次</strong> —— 五条平行时间线。目标 LLM 的五次结果是 <span class="hl-target">💗💗💗🖤🖤</span>(3 爱 2 恨),草稿 SLM 的五次结果是 <span class="hl-draft">💗🖤🖤🖤🖤</span>(1 爱 4 恨)。</span>
+      </p>
+      <p>
+        <span class="en">The SLM over-produced hate and under-produced love. To make the SLM's timelines <em>look like</em> the LLM's, some timelines must be <span class="hl-reject">erased and re-sampled</span> ("rejected"), while the rest are <span class="hl-accept">kept</span> ("accepted"). Play with it:</span>
+        <span class="zh">SLM 多生产了"恨",少生产了"爱"。要让 SLM 的时间线<em>看起来像</em> LLM 的,就得把一些时间线<span class="hl-reject">抹掉重采样</span>(拒绝),其余的<span class="hl-accept">保留</span>(接受)。动手玩一下:</span>
+      </p>
+
+      <div class="card glow">
+        <div class="widget-label">
+          <span class="en">Timeline reconciler</span><span class="zh">时间线对齐器</span>
+          <span class="tag">drag</span>
+        </div>
+        <div class="slider-row">
+          <label><span class="en">Target 💗 loves (of 5)</span><span class="zh">目标 💗 爱 (共5)</span></label>
+          <input type="range" id="tlLLM" min="0" max="5" step="1" value="3">
+          <span class="val" id="tlLLMv">3</span>
+        </div>
+        <div class="slider-row">
+          <label><span class="en">Draft 💗 loves (of 5)</span><span class="zh">草稿 💗 爱 (共5)</span></label>
+          <input type="range" id="tlSLM" min="0" max="5" step="1" value="1">
+          <span class="val" id="tlSLMv">1</span>
+        </div>
+
+        <div style="margin-top:1rem">
+          <div class="tl-label" style="text-align:left; color:var(--draft); font-size:.8rem; font-family:var(--font-pixel); letter-spacing:.05em">
+            <span class="en">DRAFT proposes →</span><span class="zh">草稿提议 →</span>
+          </div>
+          <div class="tl-cells" id="tlDraft" style="margin:.4rem 0 .2rem"></div>
+        </div>
+        <div class="arrow">↓ <span style="font-size:.8rem" id="tlVerdictNote"></span></div>
+        <div>
+          <div class="tl-label" style="text-align:left; color:var(--accept); font-size:.8rem; font-family:var(--font-pixel); letter-spacing:.05em">
+            <span class="en">AFTER accept / resample =</span><span class="zh">接受 / 重采样之后 =</span>
+          </div>
+          <div class="tl-cells" id="tlFinal" style="margin:.4rem 0"></div>
+        </div>
+        <div id="tlMatch"></div>
+        <div class="stats" style="margin-top:.9rem">
+          <div class="stat"><div class="k"><span class="en">accepted</span><span class="zh">接受</span></div><div class="v" id="tlAcc" style="color:var(--accept)">3</div></div>
+          <div class="stat"><div class="k"><span class="en">rejected</span><span class="zh">拒绝</span></div><div class="v" id="tlRej" style="color:var(--reject)">2</div></div>
+          <div class="stat"><div class="k"><span class="en">resampled → 💗/🖤</span><span class="zh">重采样 → 💗/🖤</span></div><div class="v" id="tlResam" style="color:var(--violet2)">2 / 0</div></div>
+        </div>
+        <p class="hint" style="margin-top:.7rem" id="tlExplain"></p>
+      </div>
+
+      <div class="callout">
+        <span class="en"><strong>Notice:</strong> no matter how you set the sliders, the bottom row's love/hate counts <em>always</em> equal the target's. The reconciliation never distorts the final distribution — it only redistributes which timeline carries which token. That invariance is the seed of the proof.</span>
+        <span class="zh"><strong>注意:</strong>无论你怎么拖滑块,底部一行的爱/恨数量<em>永远</em>等于目标的数量。这个"对齐"过程从不扭曲最终分布 —— 它只是重新分配"哪条时间线携带哪个 token"。这个不变性,就是证明的种子。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ §3 DERIVATION ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§3 · the derivation</div>
+      <h2><span class="en">Four honest steps</span><span class="zh">四个诚实的步骤</span></h2>
+      <p class="lead">
+        <span class="en">We track one quantity: <span class="fx">P(X = a token)</span>, the probability the <em>final</em> emitted token equals some value. We want to show it equals the target <span class="fx">p</span>. Reveal the steps one at a time.</span>
+        <span class="zh">我们只盯住一个量:<span class="fx">P(X = 某个token)</span>,即<em>最终</em>吐出的 token 等于某个值的概率。我们要证明它等于目标 <span class="fx">p</span>。逐步揭示:</span>
+      </p>
+
+      <div class="card">
+        <div class="eq" id="derivEq">
+          <div data-step="0"><b>P(X=a)</b> = P(X=a, <span style="color:var(--accept)">accept</span>) + P(X=a, <span style="color:var(--reject)">reject</span>) <span style="color:var(--mute)">&nbsp;← total probability, always true</span></div>
+          <div data-step="1" style="display:none">= P(<b>x̃</b>=a, <span style="color:var(--accept)">accept</span>) + P(X=a, <span style="color:var(--reject)">reject</span>) <span style="color:var(--mute)">&nbsp;← when accepted, X = the draft x̃</span></div>
+          <div data-step="2" style="display:none">= P(x̃=a)·P(<span style="color:var(--accept)">accept</span>|x̃=a) + P(<span style="color:var(--reject)">reject</span>)·P(X=a|<span style="color:var(--reject)">reject</span>) <span style="color:var(--mute)">&nbsp;← Bayes</span></div>
+          <div data-step="3" style="display:none">= q(a)·min(1, <span class="frac"><span>p(a)</span><span>q(a)</span></span>) + P(<span style="color:var(--reject)">reject</span>)·P(X=a|<span style="color:var(--reject)">reject</span>) <span style="color:var(--mute)">&nbsp;← acceptance rule</span></div>
+          <div data-step="4" style="display:none">= <span style="color:var(--accept)">min(p(a), q(a))</span> + P(<span style="color:var(--reject)">reject</span>)·<span style="color:var(--violet2)">(p(a)−q(a))<sub>+</sub> / Σ(p−q)<sub>+</sub></span> <span style="color:var(--mute)">&nbsp;← residual rule</span></div>
+          <div data-step="5" style="display:none; color:var(--accept)"><b>= p(a)</b> &nbsp;<span style="color:var(--mute)">← the two pieces sum back to the target. ∎</span></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="derivPrev">◀ back</button>
+          <button class="btn" id="derivNext">reveal next ▶</button>
+          <span class="hint" id="derivWhich">step 1 / 6</span>
+        </div>
+        <p class="hint" id="derivNote" style="margin-top:.7rem"></p>
+      </div>
+
+      <p>
+        <span class="en">Two rules did all the work. Let's earn each one with its own playground.</span>
+        <span class="zh">两条规则完成了全部工作。下面各用一个小玩具把它们"挣"回来。</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ §4 ACCEPTANCE ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§4 · rule one</div>
+      <h2><span class="en">Accept with prob min(1, p/q)</span><span class="zh">以 min(1, p/q) 接受</span></h2>
+      <p class="lead">
+        <span class="en">The draft handed you token <em>a</em>, which it drew with prob <span class="hl-draft">q(a)</span>. The target only wanted it with prob <span class="hl-target">p(a)</span>. So keep it with probability <span class="fx">min(1, p(a)/q(a))</span>: if the draft <em>under</em>-sampled it (q&lt;p) always keep it; if it <em>over</em>-sampled it (q&gt;p) keep only the fair fraction.</span>
+        <span class="zh">草稿递给你 token <em>a</em>,它以概率 <span class="hl-draft">q(a)</span> 采到它;而目标只以概率 <span class="hl-target">p(a)</span> 想要它。于是以 <span class="fx">min(1, p(a)/q(a))</span> 的概率保留:草稿<em>少</em>采了(q&lt;p)就全保留,<em>多</em>采了(q&gt;p)就只保留公平的那一比例。</span>
+      </p>
+
+      <div class="card glow">
+        <div class="widget-label"><span class="en">Acceptance gate</span><span class="zh">接受判定门</span><span class="tag">throw the dice</span></div>
+        <div class="grid2">
+          <div>
+            <div class="slider-row">
+              <label><span class="hl-target">p(a)</span> <span class="en">target</span><span class="zh">目标</span></label>
+              <input type="range" id="gp" min="0.02" max="1" step="0.01" value="0.3"><span class="val" id="gpv">0.30</span>
+            </div>
+            <div class="slider-row">
+              <label><span class="hl-draft">q(a)</span> <span class="en">draft</span><span class="zh">草稿</span></label>
+              <input type="range" id="gq" min="0.02" max="1" step="0.01" value="0.8"><span class="val" id="gqv">0.80</span>
+            </div>
+            <div class="eq" style="margin:.8rem 0 0">
+              accept prob = min(1, <span class="frac"><span id="gpn">0.30</span><span id="gqn">0.80</span></span>) = <b id="gthresh" style="color:var(--accept)">0.375</b>
+            </div>
+            <div class="btn-row">
+              <button class="btn" id="gThrow"><span class="en">throw ×1</span><span class="zh">投一次</span></button>
+              <button class="btn ghost" id="gThrow50"><span class="en">throw ×50</span><span class="zh">投50次</span></button>
+              <button class="btn ghost" id="gReset"><span class="en">reset</span><span class="zh">重置</span></button>
+            </div>
+          </div>
+          <div>
+            <div class="gate-stage" id="gStage">
+              <div class="thresh-zone" id="gZone"></div>
+              <div class="thresh" id="gLine"><span class="lab" id="gLineLab">accept below</span></div>
+              <div class="dice" id="gDice" style="bottom:73%">u</div>
+            </div>
+            <div class="stats" style="margin-top:.7rem">
+              <div class="stat"><div class="k"><span class="en">observed accept rate</span><span class="zh">实测接受率</span></div><div class="v" id="gObs">—</div></div>
+              <div class="stat"><div class="k"><span class="en">throws</span><span class="zh">次数</span></div><div class="v" id="gN">0</div></div>
+            </div>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:.7rem" id="gNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ §5 RESIDUAL + LOSSLESS PLAYGROUND ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§5 · rule two</div>
+      <h2><span class="en">Fix rejects with (p−q)₊</span><span class="zh">用 (p−q)₊ 修正拒绝</span></h2>
+      <p class="lead">
+        <span class="en">When a draft token is rejected, we can't just resample from p — that would double-count the mass we already accepted. We resample from the <strong>residual</strong> <span class="fx">(p−q)<sub>+</sub> = max(0, p−q)</span>, normalized. It's exactly the probability that "leaked" past the accept step. Binary vocab hides this (the residual is only 0 or 1), so here we add a third token <span class="tok none">🤍</span> <strong>meh</strong> / 无.</span>
+        <span class="zh">当草稿 token 被拒绝时,不能直接从 p 重采样 —— 那会把已经接受的部分重复计。我们从<strong>残差</strong> <span class="fx">(p−q)<sub>+</sub> = max(0, p−q)</span>(归一化后)重采样,它正是"漏过"接受步骤的那部分概率。二元词表看不出这点(残差只有 0 或 1),所以这里加入第三个 token <span class="tok none">🤍</span> <strong>无</strong>。</span>
+      </p>
+
+      <div class="card glow">
+        <div class="widget-label"><span class="en">Losslessness playground</span><span class="zh">无损游乐场</span><span class="tag">proof by experiment</span></div>
+        <div class="btn-row" style="margin-bottom:.6rem">
+          <span class="hint"><span class="en">presets:</span><span class="zh">预设:</span></span>
+          <button class="btn ghost preset" data-p="0.6,0.1,0.3" data-q="0.2,0.2,0.6"><span class="en">article</span><span class="zh">原文</span></button>
+          <button class="btn ghost preset" data-p="0.34,0.33,0.33" data-q="0.8,0.1,0.1"><span class="en">confident draft</span><span class="zh">自信草稿</span></button>
+          <button class="btn ghost preset" data-p="0.5,0.3,0.2" data-q="0.5,0.3,0.2"><span class="en">perfect draft</span><span class="zh">完美草稿</span></button>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <div class="hint" style="color:var(--target)"><span class="en">Target p — drag (auto-normalised)</span><span class="zh">目标 p — 拖动(自动归一)</span></div>
+            <div class="slider-row"><label>💗 love</label><input type="range" class="pslide" data-i="0" min="0" max="100" value="60"><span class="val pv" data-i="0">.60</span></div>
+            <div class="slider-row"><label>🤍 meh</label><input type="range" class="pslide" data-i="1" min="0" max="100" value="10"><span class="val pv" data-i="1">.10</span></div>
+            <div class="slider-row"><label>🖤 hate</label><input type="range" class="pslide" data-i="2" min="0" max="100" value="30"><span class="val pv" data-i="2">.30</span></div>
+            <div class="hint" style="color:var(--draft); margin-top:.6rem"><span class="en">Draft q — drag</span><span class="zh">草稿 q — 拖动</span></div>
+            <div class="slider-row"><label>💗 love</label><input type="range" class="qslide" data-i="0" min="0" max="100" value="20"><span class="val qv" data-i="0">.20</span></div>
+            <div class="slider-row"><label>🤍 meh</label><input type="range" class="qslide" data-i="1" min="0" max="100" value="20"><span class="val qv" data-i="1">.20</span></div>
+            <div class="slider-row"><label>🖤 hate</label><input type="range" class="qslide" data-i="2" min="0" max="100" value="60"><span class="val qv" data-i="2">.60</span></div>
+          </div>
+          <div>
+            <div class="hint"><span class="en">green = min(p,q) accepted · magenta = (p−q)₊ residual</span><span class="zh">绿 = min(p,q) 接受 · 品红 = (p−q)₊ 残差</span></div>
+            <div class="bars" id="resBars"></div>
+            <div class="stats">
+              <div class="stat"><div class="k"><span class="en">accept rate Σmin(p,q)</span><span class="zh">接受率 Σmin(p,q)</span></div><div class="v" id="resAcc" style="color:var(--accept)">—</div></div>
+              <div class="stat"><div class="k"><span class="en">reject mass</span><span class="zh">拒绝质量</span></div><div class="v" id="resRej" style="color:var(--reject)">—</div></div>
+            </div>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border); margin:1.3rem 0">
+        <div class="widget-label" style="font-size:1rem"><span class="en">Now sample — does the output match p?</span><span class="zh">现在采样 —— 输出会等于 p 吗?</span></div>
+        <div class="btn-row">
+          <button class="btn" id="sampOne"><span class="en">sample ×1</span><span class="zh">采样1次</span></button>
+          <button class="btn ghost" id="samp200"><span class="en">sample ×200</span><span class="zh">采样200次</span></button>
+          <button class="btn ghost" id="samp2000"><span class="en">sample ×2000</span><span class="zh">采样2000次</span></button>
+          <button class="btn ghost" id="sampReset"><span class="en">clear</span><span class="zh">清空</span></button>
+        </div>
+        <div id="sampTrace" class="eq" style="min-height:2.6rem; margin-top:.7rem"></div>
+        <div class="histo" id="histo"></div>
+        <div class="stats" style="margin-top:.5rem">
+          <div class="stat"><div class="k"><span class="en">samples</span><span class="zh">样本数</span></div><div class="v" id="histoN">0</div></div>
+          <div class="stat"><div class="k"><span class="en">total-variation dist to p</span><span class="zh">与 p 的总变差距离</span></div><div class="v" id="histoTV" style="color:var(--glow)">—</div></div>
+        </div>
+        <p class="hint" style="margin-top:.6rem">
+          <span class="en">The bars are the empirical output distribution; the gold ticks are the target p. As samples grow, the bars snap to the gold — the sampler emits <strong>exactly</strong> p, whatever the draft q was. That is losslessness, demonstrated.</span>
+          <span class="zh">柱子是输出的经验分布,金色刻度是目标 p。样本越多,柱子越贴近金线 —— 无论草稿 q 是什么,采样器都<strong>精确</strong>输出 p。这就是被演示出来的"无损"。</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ §6 SIMULATOR ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§6 · the full loop</div>
+      <h2><span class="en">The whole algorithm</span><span class="zh">完整算法</span></h2>
+      <p class="lead">
+        <span class="en">Zoom out from one token to a sentence. The draft proposes a run of <span id="simGammaLbl">4</span> tokens; the target verifies them in a <em>single</em> forward pass, accepting the longest correct prefix, then either fixing the first mismatch from the residual or adding one free bonus token. Step through a run:</span>
+        <span class="zh">从"一个 token"放大到"一句话"。草稿一次提议 <span id="simGammaLbl2">4</span> 个 token;目标在<em>一次</em>前向里全部校验,接受最长的正确前缀,然后要么用残差修正第一个不匹配处,要么白送一个 bonus token。逐步走一遍:</span>
+      </p>
+
+      <div class="card glow">
+        <div class="widget-label"><span class="en">Speculative decoding, step by step</span><span class="zh">投机解码,逐步演示</span><span class="tag">simulate</span></div>
+        <div id="simOut" style="font-family:var(--font-mono); font-size:1.05rem; line-height:2.4; min-height:3rem; padding:.4rem 0"></div>
+        <div class="btn-row">
+          <button class="btn" id="simStep"><span class="en">next block ▶</span><span class="zh">下一块 ▶</span></button>
+          <button class="btn ghost" id="simAuto"><span class="en">auto-run</span><span class="zh">自动播放</span></button>
+          <button class="btn ghost" id="simReset"><span class="en">restart</span><span class="zh">重来</span></button>
+        </div>
+        <div class="stats" style="margin-top:.8rem">
+          <div class="stat"><div class="k"><span class="en">tokens emitted</span><span class="zh">已产出 token</span></div><div class="v" id="simTok">0</div></div>
+          <div class="stat"><div class="k"><span class="en">target passes (cost)</span><span class="zh">目标前向次数(成本)</span></div><div class="v" id="simPass" style="color:var(--target)">0</div></div>
+          <div class="stat"><div class="k"><span class="en">tokens / pass</span><span class="zh">每次前向 token 数</span></div><div class="v" id="simRate" style="color:var(--accept)">—</div></div>
+        </div>
+        <p class="hint" style="margin-top:.6rem" id="simLegend">
+          <span class="en"><span class="hl-accept">■ accepted draft</span> · <span class="hl-reject">■ rejected</span> · <span style="color:var(--target)">■ target's fix / bonus</span>. A vanilla decoder would need one pass <em>per token</em>.</span>
+          <span class="zh"><span class="hl-accept">■ 接受的草稿</span> · <span class="hl-reject">■ 被拒绝</span> · <span style="color:var(--target)">■ 目标的修正/bonus</span>。普通解码器每个 token 都要一次前向。</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ §7 SPEEDUP ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§7 · how fast?</div>
+      <h2><span class="en">The speedup dial</span><span class="zh">加速比旋钮</span></h2>
+      <p class="lead">
+        <span class="en">If each drafted token is accepted with probability α, a block of γ draft tokens yields on average <span class="fx">(1 − α<sup>γ+1</sup>) / (1 − α)</span> tokens per target pass. Higher α (better-aligned draft) or bigger γ both help — until draft cost eats the gains.</span>
+        <span class="zh">若每个草稿 token 以概率 α 被接受,一块 γ 个草稿 token 平均每次目标前向产出 <span class="fx">(1 − α<sup>γ+1</sup>) / (1 − α)</span> 个 token。α 越高(草稿越对齐)或 γ 越大都有帮助 —— 直到草稿本身的成本吃掉收益。</span>
+      </p>
+      <div class="card glow">
+        <div class="widget-label"><span class="en">Expected tokens per verification pass</span><span class="zh">每次校验的期望 token 数</span></div>
+        <div class="grid2">
+          <div>
+            <div class="slider-row"><label>α <span class="en">accept rate</span><span class="zh">接受率</span></label><input type="range" id="spA" min="0.05" max="0.98" step="0.01" value="0.7"><span class="val" id="spAv">0.70</span></div>
+            <div class="slider-row"><label>γ <span class="en">draft length</span><span class="zh">草稿长度</span></label><input type="range" id="spG" min="1" max="10" step="1" value="4"><span class="val" id="spGv">4</span></div>
+            <div class="slider-row"><label>c <span class="en">draft cost / target</span><span class="zh">草稿成本占比</span></label><input type="range" id="spC" min="0" max="0.5" step="0.01" value="0.1"><span class="val" id="spCv">0.10</span></div>
+            <div class="stats" style="margin-top:.6rem">
+              <div class="stat"><div class="k"><span class="en">tokens / pass</span><span class="zh">每次前向 token</span></div><div class="v" id="spTPP" style="color:var(--accept)">—</div></div>
+              <div class="stat"><div class="k"><span class="en">net speedup</span><span class="zh">净加速</span></div><div class="v" id="spSpeed" style="color:var(--glow)">—</div></div>
+            </div>
+          </div>
+          <div>
+            <svg id="spPlot" viewBox="0 0 320 200" style="width:100%; height:auto; background:var(--bg2); border:1px solid var(--border); border-radius:10px"></svg>
+            <p class="hint" style="margin-top:.4rem"><span class="en">speedup vs. α (dashed = your γ) </span><span class="zh">加速比随 α 变化(虚线 = 当前 γ)</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ §8 CONTEXT ============ -->
+  <section class="wrap reveal">
+    <div class="narrow">
+      <div class="kicker">§8 · where it came from</div>
+      <h2><span class="en">Lineage & cousins</span><span class="zh">来龙去脉</span></h2>
+      <p>
+        <span class="en">Speculative sampling was proposed almost simultaneously by <strong>Leviathan, Kalman &amp; Matias</strong> (Google, 2022→ICML 2023) and <strong>Chen et&nbsp;al.</strong> (DeepMind, 2023), generalising the draft-then-verify idea of <strong>Blockwise Parallel Decoding</strong> (Stern et al., 2018). Both report a <strong>2–3× lossless</strong> latency win. Since then a whole family has grown:</span>
+        <span class="zh">投机采样几乎同时由 <strong>Leviathan、Kalman、Matias</strong>(Google, 2022→ICML 2023)与 <strong>Chen 等</strong>(DeepMind, 2023)提出,推广了 <strong>Blockwise Parallel Decoding</strong>(Stern 等, 2018)的"草稿-验收"思想。两者都报告了 <strong>2–3× 的无损</strong>加速。此后衍生出一整个家族:</span>
+      </p>
+      <div class="method-grid" id="methods"></div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="wrap">
+    <div class="narrow">
+      <h3 style="color:var(--glow)"><span class="en">Further reading</span><span class="zh">延伸阅读</span></h3>
+      <div class="further" style="margin:.6rem 0 1.6rem">
+        <div class="ref"><b>Leviathan, Kalman, Matias (2023)</b> — Fast Inference from Transformers via Speculative Decoding · <span class="hint">arXiv:2211.17192</span></div>
+        <div class="ref"><b>Chen et al. (2023)</b> — Accelerating LLM Decoding with Speculative Sampling · <span class="hint">arXiv:2302.01318</span></div>
+        <div class="ref"><b>Stern, Shazeer, Uszkoreit (2018)</b> — Blockwise Parallel Decoding · <span class="hint">NeurIPS 2018</span></div>
+      </div>
+      <p style="color:var(--dim)">
+        <span class="en">This interactive rebuild follows Haodong Lei's article <a class="inline" href="https://zhuanlan.zhihu.com/p/2056475648013735391" target="_blank" rel="noopener">《从时间线理解投机采样》</a>. Built with Claude Code.</span>
+        <span class="zh">本交互页基于雷浩东的文章<a class="inline" href="https://zhuanlan.zhihu.com/p/2056475648013735391" target="_blank" rel="noopener">《从时间线理解投机采样》</a>重制。由 Claude Code 制作。</span>
+      </p>
+      <p style="margin-top:1.4rem"><a class="btn ghost" href="../blog.html">← <span class="en">back to the portals</span><span class="zh">返回传送门</span></a></p>
+      <p class="hint" style="margin-top:1.6rem">© 2026 Haodong Lei · 雷浩东</p>
+    </div>
+  </footer>
+
+  <script>
+  /* ==========================================================
+     Utilities
+     ========================================================== */
+  const $  = (s,el=document)=>el.querySelector(s);
+  const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  const fmt=(x,n=2)=>x.toFixed(n);
+  const TOK = {love:'💗', none:'🤍', hate:'🖤'};
+  const TOK3 = ['💗','🤍','🖤'];
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- starfield ---------- */
+  function makeStars(el,count,maxColor){
+    let sh=[];
+    for(let i=0;i<count;i++){
+      const x=Math.floor(Math.random()*2000), y=Math.floor(Math.random()*2000);
+      sh.push(`${x}px ${y}px ${maxColor}`);
+      sh.push(`${x}px ${y+2000}px ${maxColor}`); // tail for seamless loop
+    }
+    el.style.boxShadow=sh.join(',');
+  }
+  makeStars($('#stars'),90,'var(--star)');
+  makeStars($('#stars2'),55,'#bfe9ff');
+  makeStars($('#stars3'),30,'#ffffff');
+
+  /* ---------- language toggle ---------- */
+  const langBtn=$('#langToggle');
+  function setLang(zh){
+    document.body.classList.toggle('lang-zh',zh);
+    document.documentElement.lang = zh?'zh':'en';
+    langBtn.textContent = zh?'EN':'中文';
+    try{localStorage.setItem('ss-lang',zh?'zh':'en');}catch(e){}
+    // re-render dynamic bits that hold text
+    renderTimeline(); renderMethods();
+  }
+  langBtn.onclick=()=>setLang(!document.body.classList.contains('lang-zh'));
+  try{ if(localStorage.getItem('ss-lang')==='zh') setLang(true); }catch(e){}
+
+  /* ---------- theme toggle ---------- */
+  const themeBtn=$('#themeToggle');
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    themeBtn.textContent = t==='dark' ? '☀︎' : '☾';
+    try{localStorage.setItem('ss-theme',t);}catch(e){}
+  }
+  themeBtn.onclick=()=>setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  try{ const st=localStorage.getItem('ss-theme'); if(st) setTheme(st); }catch(e){}
+
+  /* ---------- progress + reveal ---------- */
+  const prog=$('#progress');
+  addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const p=h.scrollTop/(h.scrollHeight-h.clientHeight);
+    prog.style.width=(p*100)+'%';
+  },{passive:true});
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  $$('.reveal').forEach(el=>io.observe(el));
+
+  /* ==========================================================
+     HERO race animation
+     ========================================================== */
+  (function(){
+    const words=['The','cat','sat','on','the','warm','mat','and','purred','softly','at','dusk'];
+    const slow=$('#tapeSlow'), fast=$('#tapeFast'), clock=$('#raceClock');
+    let t=0, si=0, fi=0;
+    function mk(w,cls){ const s=document.createElement('span'); s.className='mini-tok '+cls; s.textContent=w[0]; s.title=w; requestAnimationFrame(()=>s.classList.add('show')); return s; }
+    function tick(){
+      t++;
+      // vanilla: 1 token / step
+      if(si<words.length){ slow.appendChild(mk(words[si],'')); si++; }
+      // speculative: verify a block, accept ~3 per target pass
+      if(fi<words.length){
+        const k=Math.min(3+Math.floor(Math.random()*1.6), words.length-fi);
+        for(let j=0;j<k;j++){ fast.appendChild(mk(words[fi], j===k-1&&Math.random()<.35?'d':'g')); fi++; }
+      }
+      clock.textContent='t = '+t+'  ·  '+(fi>=words.length&&si>=words.length?'both done':'');
+      if(si>=words.length && fi>=words.length){
+        setTimeout(()=>{ t=0;si=0;fi=0; slow.innerHTML='';fast.innerHTML=''; },1600);
+      }
+    }
+    if(!reduceMotion) setInterval(tick,760); else { words.forEach(w=>{slow.appendChild(mk(w,''));fast.appendChild(mk(w,'g'));}); }
+  })();
+
+  /* ==========================================================
+     §2 Timeline reconciler
+     ========================================================== */
+  const tlLLM=$('#tlLLM'), tlSLM=$('#tlSLM');
+  function renderTimeline(){
+    const N=5;
+    const llmLove=+tlLLM.value, slmLove=+tlSLM.value;
+    $('#tlLLMv').textContent=llmLove; $('#tlSLMv').textContent=slmLove;
+    const pLove=llmLove/N, pHate=1-pLove, qLove=slmLove/N, qHate=1-qLove;
+    // accepted counts = N*min(p,q)
+    const accLove=Math.round(N*Math.min(pLove,qLove));
+    const accHate=Math.round(N*Math.min(pHate,qHate));
+    const acc=accLove+accHate, rej=N-acc;
+    // residual (p-q)+
+    const rLove=Math.max(0,pLove-qLove), rHate=Math.max(0,pHate-qHate), rSum=rLove+rHate||1;
+    const resLove=Math.round(rej*rLove/rSum), resHate=rej-resLove;
+
+    // draft cells: slmLove loves then hates
+    const draft=$('#tlDraft'); draft.innerHTML='';
+    let usedLoveAcc=0, usedHateAcc=0;
+    for(let i=0;i<N;i++){
+      const isLove=i<slmLove;
+      const cell=document.createElement('div'); cell.className='tl-cell';
+      const tk=document.createElement('span'); tk.className='tok '+(isLove?'love':'hate'); tk.textContent=isLove?TOK.love:TOK.hate;
+      // decide accept: accept first accLove loves / accHate hates
+      let ok;
+      if(isLove){ ok = usedLoveAcc<accLove; if(ok)usedLoveAcc++; }
+      else { ok = usedHateAcc<accHate; if(ok)usedHateAcc++; }
+      const v=document.createElement('span'); v.className='verdict '+(ok?'ok':'no'); v.textContent=ok?'✓':'✗';
+      cell.appendChild(tk); cell.appendChild(v); draft.appendChild(cell);
+    }
+    // final cells: accepted ones keep, rejected become resampled tokens (loves first)
+    const final=$('#tlFinal'); final.innerHTML='';
+    const finalLove=accLove+resLove, finalHate=accHate+resHate;
+    for(let i=0;i<N;i++){
+      const isLove=i<finalLove;
+      const cell=document.createElement('div'); cell.className='tl-cell';
+      const tk=document.createElement('span'); tk.className='tok '+(isLove?'love':'hate'); tk.textContent=isLove?TOK.love:TOK.hate;
+      cell.appendChild(tk); final.appendChild(cell);
+    }
+    $('#tlAcc').textContent=acc; $('#tlRej').textContent=rej;
+    $('#tlResam').textContent=resLove+' / '+resHate;
+    const zh=document.body.classList.contains('lang-zh');
+    $('#tlMatch').innerHTML='<span class="match-badge yes">✓ '+
+      (zh? '最终 '+finalLove+' 爱 / '+finalHate+' 恨 = 目标分布'
+         : 'final '+finalLove+' love / '+finalHate+' hate = target')+'</span>';
+    $('#tlVerdictNote').innerHTML = zh
+      ? '<span style="color:var(--reject)">'+rej+' 条被拒绝</span> · 从残差重采样'
+      : '<span style="color:var(--reject)">'+rej+' rejected</span> · resampled from residual';
+    $('#tlExplain').innerHTML = zh
+      ? `接受数 = 5·min(p,q):爱 ${accLove}、恨 ${accHate}。剩下 ${rej} 条从 (p−q)₊ 重采样(此处得到爱 ${resLove}、恨 ${resHate}),恰好补齐目标缺口。`
+      : `accepted = 5·min(p,q): ${accLove} love, ${accHate} hate. The remaining ${rej} resample from (p−q)₊ (here ${resLove} love, ${resHate} hate) — exactly filling the target's gap.`;
+  }
+  tlLLM.oninput=renderTimeline; tlSLM.oninput=renderTimeline;
+  renderTimeline();
+
+  /* ==========================================================
+     §3 Derivation stepper
+     ========================================================== */
+  (function(){
+    const steps=$$('#derivEq > div'); let cur=0;
+    const notesEN=[
+      'Split the final probability by whether the draft token was accepted or rejected. Always valid.',
+      'On an accepted timeline, the emitted X is literally the draft token x̃, so we may swap X→x̃ in the accept term.',
+      'Factor each term with Bayes: P(A,B)=P(B)·P(A|B).',
+      'Plug in rule one: P(accept | x̃=a) = min(1, p(a)/q(a)), and P(x̃=a)=q(a).',
+      'Plug in rule two: given a rejection, X is drawn from the normalised residual (p−q)₊.',
+      'q(a)·min(1,p/q) = min(p,q); adding the residual mass refills exactly up to p(a). Lossless. ∎'
+    ];
+    const notesZH=[
+      '按"草稿是否被接受"拆分最终概率。恒成立。',
+      '在被接受的时间线上,吐出的 X 就是草稿 x̃,故接受项里可把 X 换成 x̃。',
+      '对每一项用贝叶斯:P(A,B)=P(B)·P(A|B)。',
+      '代入规则一:P(接受 | x̃=a)=min(1, p(a)/q(a)),且 P(x̃=a)=q(a)。',
+      '代入规则二:在拒绝条件下,X 从归一化残差 (p−q)₊ 采样。',
+      'q(a)·min(1,p/q)=min(p,q);再加上残差质量,恰好补满到 p(a)。无损。∎'
+    ];
+    function show(){
+      steps.forEach((s,i)=>s.style.display=i<=cur?'block':'none');
+      $('#derivWhich').textContent='step '+(cur+1)+' / '+steps.length;
+      const zh=document.body.classList.contains('lang-zh');
+      $('#derivNote').textContent=(zh?notesZH:notesEN)[cur];
+    }
+    $('#derivNext').onclick=()=>{ cur=Math.min(cur+1,steps.length-1); show(); };
+    $('#derivPrev').onclick=()=>{ cur=Math.max(cur-1,0); show(); };
+    langBtn.addEventListener('click',()=>setTimeout(show,0));
+    show();
+  })();
+
+  /* ==========================================================
+     §4 Acceptance gate
+     ========================================================== */
+  (function(){
+    const gp=$('#gp'), gq=$('#gq'), stage=$('#gStage'), line=$('#gLine'), zone=$('#gZone'), dice=$('#gDice');
+    let acc=0,n=0;
+    function thresh(){ return Math.min(1,(+gp.value)/(+gq.value)); }
+    function draw(){
+      const p=+gp.value,q=+gq.value,th=thresh();
+      $('#gpv').textContent=fmt(p); $('#gqv').textContent=fmt(q);
+      $('#gpn').textContent=fmt(p); $('#gqn').textContent=fmt(q);
+      $('#gthresh').textContent=fmt(th,3);
+      const pct=(th*100);
+      line.style.bottom=pct+'%'; zone.style.height=pct+'%';
+      const zh=document.body.classList.contains('lang-zh');
+      $('#gLineLab').textContent = zh?'低于 = 接受':'accept below';
+    }
+    function throwOne(animate=true){
+      const u=Math.random(), th=thresh(), ok=u<th; n++; if(ok)acc++;
+      $('#gN').textContent=n; $('#gObs').textContent=fmt(acc/n,3);
+      $('#gObs').style.color = Math.abs(acc/n - th)<.05 ? 'var(--accept)':'var(--text)';
+      if(animate){
+        dice.style.bottom=(u*100)+'%';
+        dice.textContent=fmt(u,2);
+        dice.style.borderColor = ok?'var(--accept)':'var(--reject)';
+        dice.style.color = ok?'var(--accept)':'var(--reject)';
+      }
+      const zh=document.body.classList.contains('lang-zh');
+      $('#gNote').innerHTML = ok
+        ? (zh?`u=${fmt(u,2)} < ${fmt(th,2)} → <span class="hl-accept">接受,X = 草稿 token</span>`:`u=${fmt(u,2)} < ${fmt(th,2)} → <span class="hl-accept">ACCEPT, keep the draft token</span>`)
+        : (zh?`u=${fmt(u,2)} ≥ ${fmt(th,2)} → <span class="hl-reject">拒绝,改从残差重采样</span>`:`u=${fmt(u,2)} ≥ ${fmt(th,2)} → <span class="hl-reject">REJECT, resample from residual</span>`);
+    }
+    gp.oninput=draw; gq.oninput=draw;
+    $('#gThrow').onclick=()=>throwOne(true);
+    $('#gThrow50').onclick=()=>{ for(let i=0;i<50;i++)throwOne(i===49); };
+    $('#gReset').onclick=()=>{ acc=0;n=0; $('#gN').textContent=0; $('#gObs').textContent='—'; };
+    draw();
+  })();
+
+  /* ==========================================================
+     §5 Residual + losslessness playground
+     ========================================================== */
+  const PQ={ p:[0.6,0.1,0.3], q:[0.2,0.2,0.6] };
+  const hist=[0,0,0]; let histN=0;
+  function normalize(a){ const s=a.reduce((x,y)=>x+y,0)||1; return a.map(x=>x/s); }
+  function readSliders(cls,arr){
+    $$('.'+cls).forEach(sl=>{ arr[+sl.dataset.i]=+sl.value; });
+    const nn=normalize(arr); for(let i=0;i<3;i++)arr[i]=nn[i];
+  }
+  function syncSliderLabels(){
+    $$('.pv').forEach(v=>v.textContent=fmt(PQ.p[+v.dataset.i]));
+    $$('.qv').forEach(v=>v.textContent=fmt(PQ.q[+v.dataset.i]));
+  }
+  function renderResidual(){
+    const p=PQ.p,q=PQ.q;
+    const bars=$('#resBars'); bars.innerHTML='';
+    const H=150;
+    for(let i=0;i<3;i++){
+      const mn=Math.min(p[i],q[i]);
+      const resid=Math.max(0,p[i]-q[i]);      // magenta (part of p above q)
+      const over=Math.max(0,q[i]-p[i]);       // draft overshoot (wasted), shown faint
+      const g=document.createElement('div'); g.className='bar-group';
+      const stack=document.createElement('div'); stack.className='bar-stack';
+      // order (column-reverse -> first = bottom): accepted, residual, overshoot
+      const seg=(h,color,op=1)=>{ const d=document.createElement('div'); d.className='bar-seg';
+        d.style.height=(h*H)+'px'; d.style.background=color; d.style.opacity=op; return d; };
+      stack.appendChild(seg(mn,'var(--accept)'));
+      stack.appendChild(seg(resid,'var(--reject)'));
+      stack.appendChild(seg(over,'var(--draft)',.28));
+      g.appendChild(stack);
+      const cap=document.createElement('div'); cap.className='bar-cap';
+      cap.innerHTML=`${TOK3[i]}<br>p ${fmt(p[i])}<br><span style="color:var(--draft)">q ${fmt(q[i])}</span>`;
+      g.appendChild(cap); bars.appendChild(g);
+    }
+    const accMass=p.map((v,i)=>Math.min(v,q[i])).reduce((a,b)=>a+b,0);
+    $('#resAcc').textContent=fmt(accMass,2);
+    $('#resRej').textContent=fmt(1-accMass,2);
+  }
+  function specSampleOne(){
+    const p=PQ.p,q=PQ.q;
+    // draft x ~ q
+    let r=Math.random(),x=0,acc=0; for(let i=0;i<3;i++){ acc+=q[i]; if(r<=acc){x=i;break;} x=i; }
+    const u=Math.random(), th=Math.min(1, p[x]/(q[x]||1e-9));
+    let out, accepted=(u<th);
+    if(accepted){ out=x; }
+    else{
+      const resid=p.map((v,i)=>Math.max(0,v-q[i])); const rs=normalize(resid);
+      let r2=Math.random(),a2=0; out=0; for(let i=0;i<3;i++){ a2+=rs[i]; if(r2<=a2){out=i;break;} out=i; }
+    }
+    return {x,out,accepted,u,th};
+  }
+  function renderHisto(){
+    const el=$('#histo'); el.innerHTML='';
+    const emp = histN? hist.map(h=>h/histN):[0,0,0];
+    const maxv=Math.max(...PQ.p,...emp,0.001);
+    for(let i=0;i<3;i++){
+      const col=document.createElement('div'); col.className='hcol';
+      const wrap=document.createElement('div'); wrap.className='hbar-wrap';
+      const bar=document.createElement('div'); bar.className='hbar';
+      bar.style.height=(emp[i]/maxv*130)+'px';
+      const tgt=document.createElement('div'); tgt.className='htarget';
+      tgt.style.bottom=(PQ.p[i]/maxv*130)+'px';
+      tgt.innerHTML='<span class="lab">p '+fmt(PQ.p[i])+'</span>';
+      wrap.appendChild(bar); wrap.appendChild(tgt);
+      const cap=document.createElement('div'); cap.className='bar-cap';
+      cap.innerHTML=TOK3[i]+'<br>'+fmt(emp[i]);
+      col.appendChild(wrap); col.appendChild(cap); el.appendChild(col);
+    }
+    $('#histoN').textContent=histN;
+    const tv= histN? 0.5*emp.reduce((a,e,i)=>a+Math.abs(e-PQ.p[i]),0):0;
+    $('#histoTV').textContent= histN? fmt(tv,3):'—';
+    $('#histoTV').style.color = tv<0.03?'var(--accept)':'var(--glow)';
+  }
+  function runSamples(k,trace){
+    let last;
+    for(let i=0;i<k;i++){ last=specSampleOne(); hist[last.out]++; histN++; }
+    if(trace&&last){
+      const zh=document.body.classList.contains('lang-zh');
+      $('#sampTrace').innerHTML = zh
+        ? `草稿抽到 <b>${TOK3[last.x]}</b> (q=${fmt(PQ.q[last.x])}) · u=${fmt(last.u,2)} vs min(1,p/q)=${fmt(last.th,2)} · `
+          + (last.accepted?`<span class="hl-accept">接受 → 输出 ${TOK3[last.out]}</span>`:`<span class="hl-reject">拒绝</span> → 残差重采样 → 输出 <b>${TOK3[last.out]}</b>`)
+        : `draft drew <b>${TOK3[last.x]}</b> (q=${fmt(PQ.q[last.x])}) · u=${fmt(last.u,2)} vs min(1,p/q)=${fmt(last.th,2)} · `
+          + (last.accepted?`<span class="hl-accept">ACCEPT → emit ${TOK3[last.out]}</span>`:`<span class="hl-reject">REJECT</span> → residual resample → emit <b>${TOK3[last.out]}</b>`);
+    }
+    renderHisto();
+  }
+  $$('.pslide').forEach(sl=>sl.oninput=()=>{ readSliders('pslide',PQ.p); syncSliderLabels(); renderResidual(); });
+  $$('.qslide').forEach(sl=>sl.oninput=()=>{ readSliders('qslide',PQ.q); syncSliderLabels(); renderResidual(); });
+  $$('.preset').forEach(b=>b.onclick=()=>{
+    PQ.p=b.dataset.p.split(',').map(Number); PQ.q=b.dataset.q.split(',').map(Number);
+    $$('.pslide').forEach(sl=>sl.value=PQ.p[+sl.dataset.i]*100);
+    $$('.qslide').forEach(sl=>sl.value=PQ.q[+sl.dataset.i]*100);
+    syncSliderLabels(); renderResidual(); hist[0]=hist[1]=hist[2]=0; histN=0; renderHisto(); $('#sampTrace').innerHTML='';
+  });
+  $('#sampOne').onclick=()=>runSamples(1,true);
+  $('#samp200').onclick=()=>runSamples(200,true);
+  $('#samp2000').onclick=()=>runSamples(2000,true);
+  $('#sampReset').onclick=()=>{ hist[0]=hist[1]=hist[2]=0; histN=0; renderHisto(); $('#sampTrace').innerHTML=''; };
+  syncSliderLabels(); renderResidual(); renderHisto();
+
+  /* ==========================================================
+     §6 Speculative decoding simulator
+     ========================================================== */
+  (function(){
+    const target=['the','quick','brown','fox','jumps','over','the','lazy','dog','.'];
+    // per-position probability the draft's guess matches the target (draft alignment)
+    const align=[0.9,0.85,0.7,0.9,0.6,0.8,0.95,0.55,0.9,0.98];
+    const GAMMA=4;
+    const out=$('#simOut'); let pos=0, passes=0, emitted=0, autoT=null;
+    function chip(txt,cls){ return `<span class="tok ${cls}" style="min-width:auto;height:auto;padding:.15rem .5rem;font-size:.95rem;margin:0 .12rem">${txt}</span>`; }
+    function reset(){ pos=0;passes=0;emitted=0; out.innerHTML=''; upd(); if(autoT){clearInterval(autoT);autoT=null;$('#simAuto').textContent=btnAuto();} }
+    function btnAuto(){ return document.body.classList.contains('lang-zh')?'自动播放':'auto-run'; }
+    function step(){
+      if(pos>=target.length){ if(autoT){clearInterval(autoT);autoT=null;$('#simAuto').textContent=btnAuto();} return; }
+      passes++;
+      let html='';
+      let acceptedThisBlock=0, rejected=false;
+      const block=Math.min(GAMMA,target.length-pos);
+      for(let j=0;j<block;j++){
+        const matched=Math.random()<align[pos+j];
+        if(matched){ html+=chip(target[pos+j],'love'); acceptedThisBlock++; }
+        else { html+=chip('✗','hate'); rejected=true; break; }
+      }
+      // advance
+      pos+=acceptedThisBlock; emitted+=acceptedThisBlock;
+      // one correction/bonus token from the target
+      if(pos<target.length){
+        html+=chip(target[pos]+ (rejected?' ⟲':' +'),'none');
+        // style it as target colour
+        pos++; emitted++;
+      }
+      const line=document.createElement('div');
+      line.innerHTML=`<span class="hint" style="color:var(--target)">pass ${passes}: </span>`+html;
+      out.appendChild(line); out.scrollTop=out.scrollHeight;
+      upd();
+    }
+    function upd(){
+      $('#simTok').textContent=emitted; $('#simPass').textContent=passes;
+      $('#simRate').textContent= passes? (emitted/passes).toFixed(2):'—';
+    }
+    // recolour: accepted love-green, rejected red, target-fix gold — override tok classes inline
+    const style=document.createElement('style');
+    style.textContent=`#simOut .tok.love{background:rgba(69,230,164,.18);border-color:var(--accept);color:var(--accept)}
+      #simOut .tok.hate{background:rgba(255,95,126,.18);border-color:var(--reject);color:var(--reject)}
+      #simOut .tok.none{background:rgba(255,207,92,.15);border-color:var(--target);color:var(--target)}`;
+    document.head.appendChild(style);
+    $('#simStep').onclick=step;
+    $('#simReset').onclick=reset;
+    $('#simAuto').onclick=function(){
+      if(autoT){ clearInterval(autoT); autoT=null; this.textContent=btnAuto(); }
+      else { this.textContent=document.body.classList.contains('lang-zh')?'停止':'stop'; autoT=setInterval(()=>{ step(); if(pos>=target.length){clearInterval(autoT);autoT=null;this.textContent=btnAuto();} },650); }
+    };
+    reset();
+  })();
+
+  /* ==========================================================
+     §7 Speedup dial
+     ========================================================== */
+  (function(){
+    const A=$('#spA'),G=$('#spG'),C=$('#spC'),plot=$('#spPlot');
+    function tpp(a,g){ return a>=1? g+1 : (1-Math.pow(a,g+1))/(1-a); }
+    function speed(a,g,c){ return tpp(a,g)/(1+g*c); } // cost: 1 target pass + g draft calls of cost c
+    function draw(){
+      const a=+A.value,g=+G.value,c=+C.value;
+      $('#spAv').textContent=fmt(a); $('#spGv').textContent=g; $('#spCv').textContent=fmt(c);
+      $('#spTPP').textContent=fmt(tpp(a,g),2);
+      $('#spSpeed').textContent=fmt(speed(a,g,c),2)+'×';
+      // plot speedup vs alpha for current g,c
+      const W=320,Hh=200,pad=28;
+      let maxY=0; for(let i=0;i<=100;i++){ maxY=Math.max(maxY,speed(i/100,g,c)); }
+      maxY=Math.max(maxY,2);
+      const X=aa=>pad+aa*(W-pad-8);
+      const Y=v=>Hh-pad-(v/maxY)*(Hh-pad-10);
+      let d=''; for(let i=0;i<=100;i++){ const aa=i/100; d+=(i?'L':'M')+X(aa).toFixed(1)+' '+Y(speed(aa,g,c)).toFixed(1)+' '; }
+      // gridlines at speedup=1
+      const y1=Y(1);
+      plot.innerHTML=
+        `<line x1="${pad}" y1="${Hh-pad}" x2="${W-4}" y2="${Hh-pad}" stroke="var(--border2)"/>`+
+        `<line x1="${pad}" y1="10" x2="${pad}" y2="${Hh-pad}" stroke="var(--border2)"/>`+
+        `<line x1="${pad}" y1="${y1}" x2="${W-4}" y2="${y1}" stroke="var(--mute)" stroke-dasharray="3 3"/>`+
+        `<text x="${pad+2}" y="${y1-3}" fill="var(--mute)" font-size="9" font-family="monospace">1× (no gain)</text>`+
+        `<path d="${d}" fill="none" stroke="var(--glow)" stroke-width="2.4"/>`+
+        `<line x1="${X(a)}" y1="10" x2="${X(a)}" y2="${Hh-pad}" stroke="var(--violet2)" stroke-dasharray="4 3"/>`+
+        `<circle cx="${X(a)}" cy="${Y(speed(a,g,c))}" r="4" fill="var(--target)"/>`+
+        `<text x="${W-6}" y="${Hh-pad+16}" fill="var(--mute)" font-size="9" text-anchor="end" font-family="monospace">α →</text>`;
+    }
+    A.oninput=draw;G.oninput=draw;C.oninput=draw; draw();
+  })();
+
+  /* ==========================================================
+     §8 Methods
+     ========================================================== */
+  const METHODS=[
+    {en:['Blockwise Parallel (2018)','The ancestor: extra FF heads draft several future tokens, accept the longest correct prefix.'],
+     zh:['Blockwise Parallel (2018)','鼻祖:额外前馈头一次草拟多个未来 token,接受最长正确前缀。']},
+    {en:['Medusa','Bolts lightweight heads onto the frozen target; tree-attention verifies — no separate draft model.'],
+     zh:['Medusa','在冻结的目标上加轻量头,树注意力校验 —— 无需独立草稿模型。']},
+    {en:['EAGLE 1/2/3','Drafts at the feature level with dynamic draft trees; 2–6× with high acceptance.'],
+     zh:['EAGLE 1/2/3','在特征层用动态草稿树草拟;高接受率,2–6× 加速。']},
+    {en:['Jacobi / Lookahead','Training-free: reframe decoding as a fixed-point solve, harvest n-grams in parallel.'],
+     zh:['Jacobi / Lookahead','免训练:把解码视为不动点求解,并行收割 n-gram。']},
+    {en:['Self-Speculative','The target drafts for itself via early-exit layers — no extra model to host.'],
+     zh:['Self-Speculative','目标用早退层给自己当草稿 —— 无需额外模型。']},
+    {en:['DeepSeek-V3 MTP','Multi-token-prediction heads trained in; they double as a built-in high-acceptance drafter.'],
+     zh:['DeepSeek-V3 MTP','训练内置多 token 预测头,天然充当高接受率草稿器。']},
+  ];
+  function renderMethods(){
+    const zh=document.body.classList.contains('lang-zh');
+    $('#methods').innerHTML=METHODS.map(m=>{ const t=zh?m.zh:m.en; return `<div class="method"><h4>${t[0]}</h4><p>${t[1]}</p></div>`; }).join('');
+  }
+  renderMethods();
+  </script>
+</body>
+</html>
