@@ -1,9 +1,9 @@
 /**
- * Life Map — REAL-WORLD travel map (Leaflet + OpenStreetMap/CARTO tiles).
+ * Life Map — REAL-WORLD travel map (Leaflet + OpenStreetMap tiles).
  *
  *  - A real, pannable/zoomable world map fills #lifeMapFrame.
  *  - Pins are placed by real latitude/longitude (see module/lifemap/config.js).
- *  - Light/dark CARTO basemap follows the site's data-theme toggle.
+ *  - The OpenStreetMap basemap follows the site's theme via CSS.
  *  - Pixel ◆ markers + VT323 popups keep the retro look.
  *
  * Requires Leaflet to be loaded first (added in life.html):
@@ -15,17 +15,9 @@
 (function () {
   'use strict';
 
-  var TILES = {
-    light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    dark:  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-  };
+  var TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   var ATTRIBUTION =
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; ' +
-    '<a href="https://carto.com/attributions">CARTO</a>';
-
-  function currentTheme() {
-    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  }
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   // Pixel-art teardrop location pin, drawn as crisp 1x1 rects.
   // '#' = pin body, 'o' = punched hole (center dot), ' ' = empty.
@@ -118,10 +110,10 @@
       attributionControl: true
     });
 
-    // tile layer (swaps with theme)
-    var tiles = L.tileLayer(TILES[currentTheme()], {
+    // Public OpenStreetMap tiles do not require an API key. Dark mode is
+    // applied only to the tile pane in CSS, so markers and popups stay crisp.
+    L.tileLayer(TILES, {
       attribution: ATTRIBUTION,
-      subdomains: 'abcd',
       maxZoom: 19,
       detectRetina: true
     }).addTo(map);
@@ -156,13 +148,6 @@
     } else {
       map.setView([20, 0], cfg.zoom || 2);
     }
-
-    // re-theme tiles when the toggle flips data-theme on <html>
-    var obs = new MutationObserver(function () {
-      var url = TILES[currentTheme()];
-      if (tiles._url !== url) tiles.setUrl(url);
-    });
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     // size fix once laid out (frame uses aspect-ratio / flex)
     setTimeout(function () { map.invalidateSize(); }, 0);

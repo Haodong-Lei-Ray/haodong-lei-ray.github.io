@@ -87,6 +87,12 @@
   font-family: 'VT323', monospace;
 }
 
+/* OSM does not provide a separate dark raster style. Theme only the tiles;
+   controls, pins and popups keep the site's own colours. */
+.life-page[data-theme="dark"] .life-map-frame .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(1.15) saturate(0.75);
+}
+
 /* ---- pixel teardrop markers (Leaflet divIcon) ---- */
 /* container is a zero-size point at the exact lat/lng; the drop's TIP sits on it */
 .life-map-divicon { width: 0 !important; height: 0 !important; overflow: visible; }
